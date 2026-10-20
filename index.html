@@ -1,0 +1,2625 @@
+<!DOCTYPE html>
+<html lang="es" class="dark"><head><base href="https://1198738217-atari-embeds.googleusercontent.com/embeds/222dfdb87d68a4d8ac094e2ab4a2ae3a/inner-frame-minified.html?jsh=m%3B%2F_%2Fscs%2Fabc-static%2F_%2Fjs%2Fk%3Dgapi.lb.es.u9emCg1K830.O%2Fd%3D1%2Frs%3DAHpOoo-xHhtjDO7_vjeBla8wFJYUn_ascQ%2Fm%3D__features__" target="_blank">
+      <script>
+        (function() {
+          // Listen during capturing phase to intercept before <base target="_blank"> takes effect.
+          document.addEventListener('click', function(e) {
+            // Find the nearest ancestor anchor (handles nested icons, spans, svgs).
+            var el = e.target;
+            var anchor = null;
+            while (el && el !== document) {
+              if (el.tagName && el.tagName.toLowerCase() === 'a') {
+                anchor = el;
+                break;
+              }
+              el = el.parentElement;
+            }
+            if (!anchor) return;
+
+            // Only intercept relative in-page fragment links, not external links with hashes.
+            var href = anchor.getAttribute('href');
+            if (!href) return;
+            href = href.trim();
+            if (!href.startsWith('#')) return;
+
+            // Prevent default <base target="_blank"> navigation to a new blank tab.
+            e.preventDefault();
+            e.stopPropagation();
+
+            // Handle empty anchor or top anchor.
+            if (href === '#' || href === '#top') {
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+              return;
+            }
+
+            // Resolve target element by id, falling back to legacy name attribute.
+            var targetId = href.slice(1);
+            try {
+              targetId = decodeURIComponent(targetId);
+            } catch (err) {}
+
+            var targetEl = document.getElementById(targetId);
+            if (!targetEl) {
+              try {
+                var escaped = window.CSS && CSS.escape ? CSS.escape(targetId) : targetId.replace(/["\\]/g, '\\$&');
+                targetEl = document.querySelector('[name="' + escaped + '"]');
+              } catch (err) {}
+            }
+
+            // Smoothly scroll to the target within the embed and update URL hash history.
+            if (targetEl) {
+              targetEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+              if (window.history && window.history.pushState) {
+                window.history.pushState(null, '', href);
+              }
+            }
+          }, true); // useCapture: true is critical to preempt <base target="_blank">
+        })();
+      </script>
+    
+
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HabitPulse | Planilla Inteligente de Hábitos y Pendientes</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Inter + Plus Jakarta Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&amp;family=Plus+Jakarta+Sans:wght@600;700;800&amp;display=swap" rel="stylesheet">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        display: ['Plus Jakarta Sans', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(148, 163, 184, 0.25); border-radius: 9999px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(148, 163, 184, 0.4); }
+
+        @keyframes checkPop {
+            0% { transform: scale(0.88); }
+            50% { transform: scale(1.08); }
+            100% { transform: scale(1); }
+        }
+        .animate-check { animation: checkPop 0.2s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
+
+        /* Columnas con Escudo (Tonos sutiles y elegantes, sin saturación) */
+        .cheat-day-col {
+            background-image: repeating-linear-gradient(-45deg, rgba(217, 160, 91, 0.03), rgba(217, 160, 91, 0.03) 8px, rgba(217, 160, 91, 0.07) 8px, rgba(217, 160, 91, 0.07) 16px);
+        }
+        .travel-day-col {
+            background-image: repeating-linear-gradient(-45deg, rgba(100, 160, 210, 0.03), rgba(100, 160, 210, 0.03) 8px, rgba(100, 160, 210, 0.07) 8px, rgba(100, 160, 210, 0.07) 16px);
+        }
+        .sick-day-col {
+            background-image: repeating-linear-gradient(-45deg, rgba(155, 135, 195, 0.03), rgba(155, 135, 195, 0.03) 8px, rgba(155, 135, 195, 0.07) 8px, rgba(155, 135, 195, 0.07) 16px);
+        }
+
+        /* ==========================================================================
+           ESTÉTICA SUTIL Y SOFISTICADA: TEMA CÓDICE (.theme-codex)
+           Paleta mate descansada: Obsidiana Suave (#0a0d14), Bronce Antiguo (#c5b087), Azul Pizarra
+           ========================================================================== */
+        #codex-bg-canvas {
+            display: none;
+            position: fixed;
+            inset: 0;
+            width: 100vw;
+            height: 100vh;
+            pointer-events: none;
+            z-index: 0;
+        }
+        html.theme-codex #codex-bg-canvas {
+            display: block;
+        }
+        html.theme-codex body {
+            background-color: #090c12 !important;
+            background-image: 
+                radial-gradient(ellipse 80% 50% at 50% -10%, rgba(71, 118, 168, 0.11), transparent 70%),
+                radial-gradient(ellipse 60% 45% at 88% 18%, rgba(197, 176, 135, 0.07), transparent 65%),
+                radial-gradient(ellipse 70% 55% at 12% 88%, rgba(56, 138, 118, 0.06), transparent 70%),
+                linear-gradient(180deg, #090c12 0%, #0d121c 55%, #080b11 100%) !important;
+            color: #e2e8f0 !important;
+        }
+        html.theme-codex .codex-card {
+            background: linear-gradient(165deg, rgba(18, 25, 38, 0.86) 0%, rgba(12, 17, 27, 0.92) 100%) !important;
+            backdrop-filter: blur(14px) !important;
+            border: 1px solid rgba(197, 176, 135, 0.17) !important;
+            box-shadow: 0 10px 28px -10px rgba(0, 0, 0, 0.55), inset 0 1px 0 0 rgba(255, 255, 255, 0.04) !important;
+        }
+        html.theme-codex .codex-card:hover {
+            border-color: rgba(197, 176, 135, 0.28) !important;
+        }
+        html.theme-codex .codex-header {
+            background: rgba(10, 14, 22, 0.88) !important;
+            backdrop-filter: blur(16px) !important;
+            border-bottom: 1px solid rgba(197, 176, 135, 0.18) !important;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.45) !important;
+        }
+        html.theme-codex .codex-title {
+            font-family: 'Plus Jakarta Sans', sans-serif !important;
+            background: linear-gradient(90deg, #f1f5f9 0%, #DFC99B 65%, #93c5fd 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -0.01em;
+        }
+        html.theme-codex .codex-btn-primary {
+            background: linear-gradient(135deg, #2b5c8f 0%, #1e4268 100%) !important;
+            border: 1px solid rgba(197, 176, 135, 0.4) !important;
+            color: #f8fafc !important;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.12) !important;
+        }
+        html.theme-codex .codex-btn-primary:hover {
+            background: linear-gradient(135deg, #356ca6 0%, #254f7a 100%) !important;
+            border-color: rgba(223, 201, 155, 0.65) !important;
+        }
+    </style>
+<style>*, ::before, ::after{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgb(59 130 246 / 0.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }::backdrop{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgb(59 130 246 / 0.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }/* ! tailwindcss v3.4.17 | MIT License | https://tailwindcss.com */*,::after,::before{box-sizing:border-box;border-width:0;border-style:solid;border-color:#e5e7eb}::after,::before{--tw-content:''}:host,html{line-height:1.5;-webkit-text-size-adjust:100%;-moz-tab-size:4;tab-size:4;font-family:Inter, sans-serif;font-feature-settings:normal;font-variation-settings:normal;-webkit-tap-highlight-color:transparent}body{margin:0;line-height:inherit}hr{height:0;color:inherit;border-top-width:1px}abbr:where([title]){-webkit-text-decoration:underline dotted;text-decoration:underline dotted}h1,h2,h3,h4,h5,h6{font-size:inherit;font-weight:inherit}a{color:inherit;text-decoration:inherit}b,strong{font-weight:bolder}code,kbd,pre,samp{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;font-feature-settings:normal;font-variation-settings:normal;font-size:1em}small{font-size:80%}sub,sup{font-size:75%;line-height:0;position:relative;vertical-align:baseline}sub{bottom:-.25em}sup{top:-.5em}table{text-indent:0;border-color:inherit;border-collapse:collapse}button,input,optgroup,select,textarea{font-family:inherit;font-feature-settings:inherit;font-variation-settings:inherit;font-size:100%;font-weight:inherit;line-height:inherit;letter-spacing:inherit;color:inherit;margin:0;padding:0}button,select{text-transform:none}button,input:where([type=button]),input:where([type=reset]),input:where([type=submit]){-webkit-appearance:button;background-color:transparent;background-image:none}:-moz-focusring{outline:auto}:-moz-ui-invalid{box-shadow:none}progress{vertical-align:baseline}::-webkit-inner-spin-button,::-webkit-outer-spin-button{height:auto}[type=search]{-webkit-appearance:textfield;outline-offset:-2px}::-webkit-search-decoration{-webkit-appearance:none}::-webkit-file-upload-button{-webkit-appearance:button;font:inherit}summary{display:list-item}blockquote,dd,dl,figure,h1,h2,h3,h4,h5,h6,hr,p,pre{margin:0}fieldset{margin:0;padding:0}legend{padding:0}menu,ol,ul{list-style:none;margin:0;padding:0}dialog{padding:0}textarea{resize:vertical}input::placeholder,textarea::placeholder{opacity:1;color:#9ca3af}[role=button],button{cursor:pointer}:disabled{cursor:default}audio,canvas,embed,iframe,img,object,svg,video{display:block;vertical-align:middle}img,video{max-width:100%;height:auto}[hidden]:where(:not([hidden=until-found])){display:none}.pointer-events-none{pointer-events:none}.fixed{position:fixed}.relative{position:relative}.sticky{position:sticky}.inset-0{inset:0px}.bottom-5{bottom:1.25rem}.right-5{right:1.25rem}.top-0{top:0px}.z-10{z-index:10}.z-30{z-index:30}.z-50{z-index:50}.mx-auto{margin-left:auto;margin-right:auto}.mb-1{margin-bottom:0.25rem}.mb-1\.5{margin-bottom:0.375rem}.mb-2{margin-bottom:0.5rem}.mb-3{margin-bottom:0.75rem}.mt-0\.5{margin-top:0.125rem}.mt-1{margin-top:0.25rem}.mt-1\.5{margin-top:0.375rem}.mt-2{margin-top:0.5rem}.mt-3{margin-top:0.75rem}.mt-4{margin-top:1rem}.mt-6{margin-top:1.5rem}.block{display:block}.inline-block{display:inline-block}.flex{display:flex}.inline-flex{display:inline-flex}.grid{display:grid}.hidden{display:none}.h-1\.5{height:0.375rem}.h-10{height:2.5rem}.h-2{height:0.5rem}.h-3\.5{height:0.875rem}.h-4{height:1rem}.h-5{height:1.25rem}.h-52{height:13rem}.h-7{height:1.75rem}.h-full{height:100%}.max-h-60{max-height:15rem}.max-h-\[90vh\]{max-height:90vh}.max-h-\[92vh\]{max-height:92vh}.min-h-\[38px\]{min-height:38px}.min-h-screen{min-height:100vh}.w-1\/2{width:50%}.w-10{width:2.5rem}.w-12{width:3rem}.w-2{width:0.5rem}.w-3\.5{width:0.875rem}.w-4{width:1rem}.w-5{width:1.25rem}.w-7{width:1.75rem}.w-full{width:100%}.min-w-\[185px\]{min-width:185px}.min-w-\[28px\]{min-width:28px}.min-w-\[960px\]{min-width:960px}.max-w-2xl{max-width:42rem}.max-w-\[1440px\]{max-width:1440px}.max-w-\[150px\]{max-width:150px}.max-w-lg{max-width:32rem}.max-w-md{max-width:28rem}.flex-1{flex:1 1 0%}.shrink-0{flex-shrink:0}.border-collapse{border-collapse:collapse}.cursor-pointer{cursor:pointer}.select-none{-webkit-user-select:none;user-select:none}.resize-none{resize:none}.grid-cols-1{grid-template-columns:repeat(1, minmax(0, 1fr))}.grid-cols-2{grid-template-columns:repeat(2, minmax(0, 1fr))}.grid-cols-7{grid-template-columns:repeat(7, minmax(0, 1fr))}.flex-col{flex-direction:column}.flex-wrap{flex-wrap:wrap}.items-start{align-items:flex-start}.items-center{align-items:center}.items-baseline{align-items:baseline}.justify-end{justify-content:flex-end}.justify-center{justify-content:center}.justify-between{justify-content:space-between}.gap-1{gap:0.25rem}.gap-1\.5{gap:0.375rem}.gap-2{gap:0.5rem}.gap-2\.5{gap:0.625rem}.gap-3{gap:0.75rem}.gap-4{gap:1rem}.gap-6{gap:1.5rem}.space-y-1\.5 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(0.375rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(0.375rem * var(--tw-space-y-reverse))}.space-y-2 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(0.5rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(0.5rem * var(--tw-space-y-reverse))}.space-y-2\.5 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(0.625rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(0.625rem * var(--tw-space-y-reverse))}.space-y-3 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(0.75rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(0.75rem * var(--tw-space-y-reverse))}.space-y-3\.5 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(0.875rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(0.875rem * var(--tw-space-y-reverse))}.space-y-4 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(1rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(1rem * var(--tw-space-y-reverse))}.space-y-6 > :not([hidden]) ~ :not([hidden]){--tw-space-y-reverse:0;margin-top:calc(1.5rem * calc(1 - var(--tw-space-y-reverse)));margin-bottom:calc(1.5rem * var(--tw-space-y-reverse))}.divide-y > :not([hidden]) ~ :not([hidden]){--tw-divide-y-reverse:0;border-top-width:calc(1px * calc(1 - var(--tw-divide-y-reverse)));border-bottom-width:calc(1px * var(--tw-divide-y-reverse))}.divide-slate-200\/60 > :not([hidden]) ~ :not([hidden]){border-color:rgb(226 232 240 / 0.6)}.overflow-hidden{overflow:hidden}.overflow-x-auto{overflow-x:auto}.overflow-y-auto{overflow-y:auto}.truncate{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.rounded{border-radius:0.25rem}.rounded-2xl{border-radius:1rem}.rounded-full{border-radius:9999px}.rounded-lg{border-radius:0.5rem}.rounded-xl{border-radius:0.75rem}.border{border-width:1px}.border-b{border-bottom-width:1px}.border-t{border-top-width:1px}.border-dashed{border-style:dashed}.border-slate-100{--tw-border-opacity:1;border-color:rgb(241 245 249 / var(--tw-border-opacity, 1))}.border-slate-200{--tw-border-opacity:1;border-color:rgb(226 232 240 / var(--tw-border-opacity, 1))}.border-slate-200\/60{border-color:rgb(226 232 240 / 0.6)}.border-slate-200\/70{border-color:rgb(226 232 240 / 0.7)}.border-slate-200\/80{border-color:rgb(226 232 240 / 0.8)}.border-slate-300{--tw-border-opacity:1;border-color:rgb(203 213 225 / var(--tw-border-opacity, 1))}.border-slate-300\/60{border-color:rgb(203 213 225 / 0.6)}.border-teal-500\/20{border-color:rgb(20 184 166 / 0.2)}.border-teal-500\/25{border-color:rgb(20 184 166 / 0.25)}.border-teal-500\/30{border-color:rgb(20 184 166 / 0.3)}.bg-amber-500\/10{background-color:rgb(245 158 11 / 0.1)}.bg-amber-500\/15{background-color:rgb(245 158 11 / 0.15)}.bg-amber-500\/75{background-color:rgb(245 158 11 / 0.75)}.bg-purple-400\/75{background-color:rgb(192 132 252 / 0.75)}.bg-rose-500\/10{background-color:rgb(244 63 94 / 0.1)}.bg-sky-500\/15{background-color:rgb(14 165 233 / 0.15)}.bg-sky-500\/75{background-color:rgb(14 165 233 / 0.75)}.bg-slate-100{--tw-bg-opacity:1;background-color:rgb(241 245 249 / var(--tw-bg-opacity, 1))}.bg-slate-100\/80{background-color:rgb(241 245 249 / 0.8)}.bg-slate-200\/80{background-color:rgb(226 232 240 / 0.8)}.bg-slate-50{--tw-bg-opacity:1;background-color:rgb(248 250 252 / var(--tw-bg-opacity, 1))}.bg-slate-50\/60{background-color:rgb(248 250 252 / 0.6)}.bg-slate-700{--tw-bg-opacity:1;background-color:rgb(51 65 85 / var(--tw-bg-opacity, 1))}.bg-slate-950\/70{background-color:rgb(2 6 23 / 0.7)}.bg-teal-500\/10{background-color:rgb(20 184 166 / 0.1)}.bg-teal-500\/15{background-color:rgb(20 184 166 / 0.15)}.bg-teal-500\/80{background-color:rgb(20 184 166 / 0.8)}.bg-teal-600{--tw-bg-opacity:1;background-color:rgb(13 148 136 / var(--tw-bg-opacity, 1))}.bg-teal-600\/90{background-color:rgb(13 148 136 / 0.9)}.bg-transparent{background-color:transparent}.bg-white{--tw-bg-opacity:1;background-color:rgb(255 255 255 / var(--tw-bg-opacity, 1))}.bg-white\/90{background-color:rgb(255 255 255 / 0.9)}.bg-gradient-to-br{background-image:linear-gradient(to bottom right, var(--tw-gradient-stops))}.bg-gradient-to-r{background-image:linear-gradient(to right, var(--tw-gradient-stops))}.from-teal-600{--tw-gradient-from:#0d9488 var(--tw-gradient-from-position);--tw-gradient-to:rgb(13 148 136 / 0) var(--tw-gradient-to-position);--tw-gradient-stops:var(--tw-gradient-from), var(--tw-gradient-to)}.to-emerald-500\/80{--tw-gradient-to:rgb(16 185 129 / 0.8) var(--tw-gradient-to-position)}.to-slate-700{--tw-gradient-to:#334155 var(--tw-gradient-to-position)}.stroke-\[2\.2\]{stroke-width:2.2}.p-1{padding:0.25rem}.p-1\.5{padding:0.375rem}.p-2{padding:0.5rem}.p-2\.5{padding:0.625rem}.p-3\.5{padding:0.875rem}.p-4{padding:1rem}.p-5{padding:1.25rem}.p-6{padding:1.5rem}.px-1\.5{padding-left:0.375rem;padding-right:0.375rem}.px-2{padding-left:0.5rem;padding-right:0.5rem}.px-2\.5{padding-left:0.625rem;padding-right:0.625rem}.px-3{padding-left:0.75rem;padding-right:0.75rem}.px-3\.5{padding-left:0.875rem;padding-right:0.875rem}.px-4{padding-left:1rem;padding-right:1rem}.px-5{padding-left:1.25rem;padding-right:1.25rem}.py-0\.5{padding-top:0.125rem;padding-bottom:0.125rem}.py-1{padding-top:0.25rem;padding-bottom:0.25rem}.py-1\.5{padding-top:0.375rem;padding-bottom:0.375rem}.py-2{padding-top:0.5rem;padding-bottom:0.5rem}.py-2\.5{padding-top:0.625rem;padding-bottom:0.625rem}.py-3{padding-top:0.75rem;padding-bottom:0.75rem}.pb-16{padding-bottom:4rem}.pb-3{padding-bottom:0.75rem}.pb-4{padding-bottom:1rem}.pr-1{padding-right:0.25rem}.pt-2{padding-top:0.5rem}.pt-2\.5{padding-top:0.625rem}.pt-3{padding-top:0.75rem}.pt-5{padding-top:1.25rem}.text-left{text-align:left}.text-center{text-align:center}.text-right{text-align:right}.font-mono{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace}.font-sans{font-family:Inter, sans-serif}.text-2xl{font-size:1.5rem;line-height:2rem}.text-\[10px\]{font-size:10px}.text-\[11px\]{font-size:11px}.text-base{font-size:1rem;line-height:1.5rem}.text-lg{font-size:1.125rem;line-height:1.75rem}.text-sm{font-size:0.875rem;line-height:1.25rem}.text-xs{font-size:0.75rem;line-height:1rem}.font-bold{font-weight:700}.font-extrabold{font-weight:800}.font-medium{font-weight:500}.font-semibold{font-weight:600}.uppercase{text-transform:uppercase}.leading-relaxed{line-height:1.625}.leading-tight{line-height:1.25}.tracking-tight{letter-spacing:-0.025em}.tracking-wider{letter-spacing:0.05em}.text-amber-400{--tw-text-opacity:1;color:rgb(251 191 36 / var(--tw-text-opacity, 1))}.text-amber-500\/80{color:rgb(245 158 11 / 0.8)}.text-amber-600\/90{color:rgb(217 119 6 / 0.9)}.text-rose-400{--tw-text-opacity:1;color:rgb(251 113 133 / var(--tw-text-opacity, 1))}.text-sky-400{--tw-text-opacity:1;color:rgb(56 189 248 / var(--tw-text-opacity, 1))}.text-sky-600{--tw-text-opacity:1;color:rgb(2 132 199 / var(--tw-text-opacity, 1))}.text-sky-700{--tw-text-opacity:1;color:rgb(3 105 161 / var(--tw-text-opacity, 1))}.text-slate-100{--tw-text-opacity:1;color:rgb(241 245 249 / var(--tw-text-opacity, 1))}.text-slate-400{--tw-text-opacity:1;color:rgb(148 163 184 / var(--tw-text-opacity, 1))}.text-slate-500{--tw-text-opacity:1;color:rgb(100 116 139 / var(--tw-text-opacity, 1))}.text-slate-600{--tw-text-opacity:1;color:rgb(71 85 105 / var(--tw-text-opacity, 1))}.text-slate-700{--tw-text-opacity:1;color:rgb(51 65 85 / var(--tw-text-opacity, 1))}.text-slate-800{--tw-text-opacity:1;color:rgb(30 41 59 / var(--tw-text-opacity, 1))}.text-teal-400{--tw-text-opacity:1;color:rgb(45 212 191 / var(--tw-text-opacity, 1))}.text-teal-500{--tw-text-opacity:1;color:rgb(20 184 166 / var(--tw-text-opacity, 1))}.text-teal-600{--tw-text-opacity:1;color:rgb(13 148 136 / var(--tw-text-opacity, 1))}.text-teal-700{--tw-text-opacity:1;color:rgb(15 118 110 / var(--tw-text-opacity, 1))}.text-white{--tw-text-opacity:1;color:rgb(255 255 255 / var(--tw-text-opacity, 1))}.opacity-85{opacity:0.85}.shadow-2xl{--tw-shadow:0 25px 50px -12px rgb(0 0 0 / 0.25);--tw-shadow-colored:0 25px 50px -12px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-md{--tw-shadow:0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);--tw-shadow-colored:0 4px 6px -1px var(--tw-shadow-color), 0 2px 4px -2px var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.shadow-sm{--tw-shadow:0 1px 2px 0 rgb(0 0 0 / 0.05);--tw-shadow-colored:0 1px 2px 0 var(--tw-shadow-color);box-shadow:var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow)}.backdrop-blur-md{--tw-backdrop-blur:blur(12px);-webkit-backdrop-filter:var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia);backdrop-filter:var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia)}.backdrop-blur-sm{--tw-backdrop-blur:blur(4px);-webkit-backdrop-filter:var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia);backdrop-filter:var(--tw-backdrop-blur) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia)}.transition{transition-property:color, background-color, border-color, fill, stroke, opacity, box-shadow, transform, filter, -webkit-text-decoration-color, -webkit-backdrop-filter;transition-property:color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter;transition-property:color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter, -webkit-text-decoration-color, -webkit-backdrop-filter;transition-timing-function:cubic-bezier(0.4, 0, 0.2, 1);transition-duration:150ms}.transition-all{transition-property:all;transition-timing-function:cubic-bezier(0.4, 0, 0.2, 1);transition-duration:150ms}.transition-colors{transition-property:color, background-color, border-color, fill, stroke, -webkit-text-decoration-color;transition-property:color, background-color, border-color, text-decoration-color, fill, stroke;transition-property:color, background-color, border-color, text-decoration-color, fill, stroke, -webkit-text-decoration-color;transition-timing-function:cubic-bezier(0.4, 0, 0.2, 1);transition-duration:150ms}.duration-300{transition-duration:300ms}.duration-500{transition-duration:500ms}.selection\:bg-teal-600 *::selection{--tw-bg-opacity:1;background-color:rgb(13 148 136 / var(--tw-bg-opacity, 1))}.selection\:text-white *::selection{--tw-text-opacity:1;color:rgb(255 255 255 / var(--tw-text-opacity, 1))}.selection\:bg-teal-600::selection{--tw-bg-opacity:1;background-color:rgb(13 148 136 / var(--tw-bg-opacity, 1))}.selection\:text-white::selection{--tw-text-opacity:1;color:rgb(255 255 255 / var(--tw-text-opacity, 1))}.hover\:bg-rose-500\/15:hover{background-color:rgb(244 63 94 / 0.15)}.hover\:bg-slate-200:hover{--tw-bg-opacity:1;background-color:rgb(226 232 240 / var(--tw-bg-opacity, 1))}.hover\:bg-slate-600:hover{--tw-bg-opacity:1;background-color:rgb(71 85 105 / var(--tw-bg-opacity, 1))}.hover\:bg-teal-500:hover{--tw-bg-opacity:1;background-color:rgb(20 184 166 / var(--tw-bg-opacity, 1))}.hover\:bg-teal-500\/20:hover{background-color:rgb(20 184 166 / 0.2)}.hover\:bg-teal-600:hover{--tw-bg-opacity:1;background-color:rgb(13 148 136 / var(--tw-bg-opacity, 1))}.hover\:bg-white:hover{--tw-bg-opacity:1;background-color:rgb(255 255 255 / var(--tw-bg-opacity, 1))}.hover\:text-white:hover{--tw-text-opacity:1;color:rgb(255 255 255 / var(--tw-text-opacity, 1))}.hover\:underline:hover{-webkit-text-decoration-line:underline;text-decoration-line:underline}.focus\:outline-none:focus{outline:2px solid transparent;outline-offset:2px}.focus\:ring-1:focus{--tw-ring-offset-shadow:var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);--tw-ring-shadow:var(--tw-ring-inset) 0 0 0 calc(1px + var(--tw-ring-offset-width)) var(--tw-ring-color);box-shadow:var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000)}.focus\:ring-sky-500\/60:focus{--tw-ring-color:rgb(14 165 233 / 0.6)}.focus\:ring-teal-500:focus{--tw-ring-opacity:1;--tw-ring-color:rgb(20 184 166 / var(--tw-ring-opacity, 1))}.focus\:ring-teal-500\/60:focus{--tw-ring-color:rgb(20 184 166 / 0.6)}.dark\:divide-slate-800\/70:is(.dark *) > :not([hidden]) ~ :not([hidden]){border-color:rgb(30 41 59 / 0.7)}.dark\:border-slate-700:is(.dark *){--tw-border-opacity:1;border-color:rgb(51 65 85 / var(--tw-border-opacity, 1))}.dark\:border-slate-700\/60:is(.dark *){border-color:rgb(51 65 85 / 0.6)}.dark\:border-slate-700\/70:is(.dark *){border-color:rgb(51 65 85 / 0.7)}.dark\:border-slate-700\/80:is(.dark *){border-color:rgb(51 65 85 / 0.8)}.dark\:border-slate-800:is(.dark *){--tw-border-opacity:1;border-color:rgb(30 41 59 / var(--tw-border-opacity, 1))}.dark\:border-slate-800\/80:is(.dark *){border-color:rgb(30 41 59 / 0.8)}.dark\:bg-\[\#0b0f17\]:is(.dark *){--tw-bg-opacity:1;background-color:rgb(11 15 23 / var(--tw-bg-opacity, 1))}.dark\:bg-slate-700:is(.dark *){--tw-bg-opacity:1;background-color:rgb(51 65 85 / var(--tw-bg-opacity, 1))}.dark\:bg-slate-800:is(.dark *){--tw-bg-opacity:1;background-color:rgb(30 41 59 / var(--tw-bg-opacity, 1))}.dark\:bg-slate-800\/40:is(.dark *){background-color:rgb(30 41 59 / 0.4)}.dark\:bg-slate-800\/60:is(.dark *){background-color:rgb(30 41 59 / 0.6)}.dark\:bg-slate-800\/75:is(.dark *){background-color:rgb(30 41 59 / 0.75)}.dark\:bg-slate-800\/80:is(.dark *){background-color:rgb(30 41 59 / 0.8)}.dark\:bg-slate-900:is(.dark *){--tw-bg-opacity:1;background-color:rgb(15 23 42 / var(--tw-bg-opacity, 1))}.dark\:bg-slate-900\/50:is(.dark *){background-color:rgb(15 23 42 / 0.5)}.dark\:bg-slate-900\/90:is(.dark *){background-color:rgb(15 23 42 / 0.9)}.dark\:text-amber-300\/90:is(.dark *){color:rgb(252 211 77 / 0.9)}.dark\:text-sky-400:is(.dark *){--tw-text-opacity:1;color:rgb(56 189 248 / var(--tw-text-opacity, 1))}.dark\:text-sky-400\/90:is(.dark *){color:rgb(56 189 248 / 0.9)}.dark\:text-slate-100:is(.dark *){--tw-text-opacity:1;color:rgb(241 245 249 / var(--tw-text-opacity, 1))}.dark\:text-slate-200:is(.dark *){--tw-text-opacity:1;color:rgb(226 232 240 / var(--tw-text-opacity, 1))}.dark\:text-slate-300:is(.dark *){--tw-text-opacity:1;color:rgb(203 213 225 / var(--tw-text-opacity, 1))}.dark\:text-slate-400:is(.dark *){--tw-text-opacity:1;color:rgb(148 163 184 / var(--tw-text-opacity, 1))}.dark\:text-teal-300:is(.dark *){--tw-text-opacity:1;color:rgb(94 234 212 / var(--tw-text-opacity, 1))}.dark\:text-teal-400:is(.dark *){--tw-text-opacity:1;color:rgb(45 212 191 / var(--tw-text-opacity, 1))}.dark\:text-teal-400\/90:is(.dark *){color:rgb(45 212 191 / 0.9)}.dark\:hover\:bg-slate-600:hover:is(.dark *){--tw-bg-opacity:1;background-color:rgb(71 85 105 / var(--tw-bg-opacity, 1))}.dark\:hover\:bg-slate-700:hover:is(.dark *){--tw-bg-opacity:1;background-color:rgb(51 65 85 / var(--tw-bg-opacity, 1))}.dark\:hover\:bg-slate-700\/80:hover:is(.dark *){background-color:rgb(51 65 85 / 0.8)}@media (min-width: 640px){.sm\:col-span-2{grid-column:span 2 / span 2}.sm\:block{display:block}.sm\:grid-cols-2{grid-template-columns:repeat(2, minmax(0, 1fr))}.sm\:items-center{align-items:center}.sm\:p-6{padding:1.5rem}.sm\:px-6{padding-left:1.5rem;padding-right:1.5rem}.sm\:text-lg{font-size:1.125rem;line-height:1.75rem}.sm\:text-sm{font-size:0.875rem;line-height:1.25rem}}@media (min-width: 768px){.md\:col-span-1{grid-column:span 1 / span 1}.md\:col-span-2{grid-column:span 2 / span 2}.md\:col-span-3{grid-column:span 3 / span 3}.md\:col-span-4{grid-column:span 4 / span 4}.md\:inline{display:inline}.md\:grid-cols-12{grid-template-columns:repeat(12, minmax(0, 1fr))}.md\:grid-cols-2{grid-template-columns:repeat(2, minmax(0, 1fr))}}@media (min-width: 1024px){.lg\:col-span-3{grid-column:span 3 / span 3}.lg\:col-span-4{grid-column:span 4 / span 4}.lg\:col-span-5{grid-column:span 5 / span 5}.lg\:grid-cols-12{grid-template-columns:repeat(12, minmax(0, 1fr))}.lg\:grid-cols-6{grid-template-columns:repeat(6, minmax(0, 1fr))}.lg\:flex-row{flex-direction:row}.lg\:items-center{align-items:center}}@media (min-width: 1280px){.xl\:inline{display:inline}.xl\:flex-row{flex-direction:row}.xl\:items-center{align-items:center}.xl\:justify-between{justify-content:space-between}}</style></head>
+<body class="bg-slate-100/80 dark:bg-[#0b0f17] text-slate-800 dark:text-slate-200 min-h-screen transition-colors duration-300 font-sans selection:bg-teal-600 selection:text-white pb-16 relative">
+
+    <!-- Fondo animado de partículas suaves para el tema Códice -->
+    <canvas id="codex-bg-canvas"></canvas>
+
+    <!-- Notificación Toast Flotante -->
+    <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+    <!-- ==========================================================================
+         BARRA SUPERIOR (PLANILLA ESTÁNDAR DE ESCRITORIO)
+         ========================================================================== -->
+    <header class="codex-header sticky top-0 z-30 backdrop-blur-md bg-white/90 dark:bg-slate-900/90 border-b border-slate-200/80 dark:border-slate-800/80 transition-colors">
+        <div class="max-w-[1440px] mx-auto px-4 sm:px-6 py-2.5 flex flex-wrap items-center justify-between gap-3 relative z-10">
+            
+            <!-- Marca -->
+            <div class="flex items-center gap-3">
+                <div id="brand-logo-box" class="w-10 h-10 rounded-xl bg-gradient-to-br from-teal-600 to-slate-700 flex items-center justify-center text-white shadow-sm shrink-0 text-lg">
+                    ⚡
+                </div>
+                <div>
+                    <div class="flex items-center gap-2">
+                        <h1 id="app-main-title" class="codex-title text-lg font-extrabold tracking-tight text-slate-800 dark:text-slate-100">
+                            HabitPulse
+                        </h1>
+                        <span id="app-mode-badge" class="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-teal-500/10 text-teal-700 dark:text-teal-300 border border-teal-500/25">
+                            Planilla Pro
+                        </span>
+                    </div>
+                    <p class="text-[11px] text-slate-500 dark:text-slate-400 hidden sm:block">
+                        Seguimiento semanal de hábitos, estudio, postulaciones y pendientes
+                    </p>
+                </div>
+            </div>
+
+            <!-- Navegador de Semana Central -->
+            <div class="flex items-center gap-1 bg-slate-100 dark:bg-slate-800/75 p-1 rounded-2xl border border-slate-200/80 dark:border-slate-700/70">
+                <button onclick="navigateWeek(-1)" title="Semana Anterior" class="px-2.5 py-1.5 rounded-xl hover:bg-white dark:hover:bg-slate-700/80 text-slate-600 dark:text-slate-300 transition-all text-xs font-semibold flex items-center gap-1">
+                    <i data-lucide="chevron-left" class="w-4 h-4"></i>
+                    <span class="hidden md:inline">Anterior</span>
+                </button>
+
+                <div class="px-2.5 py-0.5 text-center min-w-[185px]">
+                    <div class="flex items-center justify-center gap-1.5">
+                        <i data-lucide="calendar-range" class="w-3.5 h-3.5 text-teal-600 dark:text-teal-400"></i>
+                        <span id="week-range-label" class="text-xs font-bold text-slate-800 dark:text-slate-100">
+                            Lun 19 – Dom 25 Oct 2026
+                        </span>
+                    </div>
+                    <span id="week-status-badge" class="inline-block text-[10px] font-semibold uppercase tracking-wider px-2 py-0.2 rounded-full bg-teal-500/10 text-teal-700 dark:text-teal-300">
+                        Semana Actual
+                    </span>
+                </div>
+
+                <button onclick="navigateWeek(1)" title="Semana Siguiente" class="px-2.5 py-1.5 rounded-xl hover:bg-white dark:hover:bg-slate-700/80 text-slate-600 dark:text-slate-300 transition-all text-xs font-semibold flex items-center gap-1">
+                    <span class="hidden md:inline">Siguiente</span>
+                    <i data-lucide="chevron-right" class="w-4 h-4"></i>
+                </button>
+
+                <button id="btn-go-today" onclick="goToCurrentWeek()" class="hidden px-2.5 py-1.5 rounded-xl bg-teal-600 hover:bg-teal-500 text-white text-xs font-bold transition-all">
+                    Hoy
+                </button>
+            </div>
+
+            <!-- ⏱️ RELOJ POMODORO DE ENFOQUE (Tonos pizarra suaves) -->
+            <div class="flex items-center gap-2 bg-slate-100 dark:bg-slate-800/75 px-3 py-1.5 rounded-2xl border border-slate-200/80 dark:border-slate-700/70">
+                <div class="flex items-center gap-1.5">
+                    <span class="text-sm" title="Temporizador de Enfoque (Marca Diplomado al terminar)">⏱️</span>
+                    <span id="pomo-time-display" class="font-mono text-sm font-bold text-slate-800 dark:text-slate-100 w-12 text-center">25:00</span>
+                </div>
+                <div class="flex items-center gap-1">
+                    <button onclick="togglePomodoro()" id="pomo-start-btn" class="px-2.5 py-1 rounded-lg bg-slate-700 hover:bg-slate-600 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-100 text-[11px] font-semibold transition">
+                        Iniciar
+                    </button>
+                    <button onclick="switchPomodoroPreset()" id="pomo-preset-btn" title="Cambiar entre 25m y 45m" class="px-1.5 py-1 rounded-lg bg-slate-200/80 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-[10px] font-bold border border-slate-300/60 dark:border-slate-700">
+                        25m
+                    </button>
+                    <button onclick="resetPomodoro()" title="Reiniciar reloj" class="p-1 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-400">
+                        <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Selector de 3 Temas + Grupos + Respaldo/GitHub + Nuevo Hábito -->
+            <div class="flex items-center gap-2">
+                <!-- Selector de Tema: Pro (Oscuro) | Claro | Códice RPG -->
+                <div class="inline-flex rounded-xl bg-slate-100 dark:bg-slate-800/80 p-1 border border-slate-200 dark:border-slate-700/70">
+                    <button onclick="setThemeMode('dark')" id="theme-btn-dark" title="Tema Oscuro Pro" class="px-2.5 py-1 rounded-lg text-xs font-semibold transition-all flex items-center gap-1">
+                        🌙 <span class="hidden xl:inline">Pro</span>
+                    </button>
+                    <button onclick="setThemeMode('light')" id="theme-btn-light" title="Tema Claro" class="px-2.5 py-1 rounded-lg text-xs font-semibold transition-all flex items-center gap-1">
+                        ☀️ <span class="hidden xl:inline">Claro</span>
+                    </button>
+                    <button onclick="setThemeMode('codex')" id="theme-btn-codex" title="Tema Códice RPG (Tonos mate elegantes y fondo animado)" class="px-2.5 py-1 rounded-lg text-xs font-semibold transition-all flex items-center gap-1">
+                        ✨ <span>Códice RPG</span>
+                    </button>
+                </div>
+
+                <!-- Gestor de Categorías / Grupos -->
+                <button onclick="openCategoriesModal()" title="Editar Grupos de Tareas y Categorías" class="p-2 rounded-xl bg-slate-100 dark:bg-slate-800/80 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 border border-slate-200/70 dark:border-slate-700/70 text-xs font-semibold flex items-center gap-1">
+                    <i data-lucide="tags" class="w-4 h-4 text-slate-500 dark:text-slate-400"></i>
+                    <span class="hidden xl:inline">Grupos</span>
+                </button>
+
+                <!-- Botón Descargar Kit GitHub / Datos -->
+                <button onclick="openBackupModal()" title="Descargar archivos para GitHub (index.html, README.md y respaldo .json)" class="px-2.5 py-2 rounded-xl bg-slate-100 dark:bg-slate-800/80 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-teal-500/30 text-xs font-semibold flex items-center gap-1.5 shadow-sm">
+                    <i data-lucide="package-check" class="w-4 h-4 text-teal-600 dark:text-teal-400"></i>
+                    <span>Kit GitHub / Datos</span>
+                </button>
+
+                <button onclick="openHabitModal()" class="codex-btn-primary flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-teal-600 hover:bg-teal-500 text-white font-semibold text-xs shadow-sm transition-all">
+                    <i data-lucide="plus" class="w-4 h-4 stroke-[2.2]"></i>
+                    <span>Nuevo Hábito</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- ==========================================================================
+         CONTENEDOR PRINCIPAL DE LA PLANILLA
+         ========================================================================== -->
+    <main class="max-w-[1440px] mx-auto px-4 sm:px-6 pt-5 space-y-6 relative z-10">
+
+        <!-- TARJETAS DE RESUMEN KPI + FOCO DE HOY (TOP 3) -->
+        <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4">
+            <!-- KPI 1: Cumplimiento Semanal -->
+            <div class="codex-card bg-white dark:bg-slate-900/90 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-4 shadow-sm">
+                <div class="flex items-start justify-between">
+                    <div>
+                        <p class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Cumplimiento Sem.</p>
+                        <div class="flex items-baseline gap-2 mt-1">
+                            <h2 id="kpi-weekly-rate" class="text-2xl font-extrabold text-slate-800 dark:text-slate-100">0%</h2>
+                            <span id="kpi-weekly-fraction" class="text-xs font-medium text-slate-500">0/0 metas</span>
+                        </div>
+                    </div>
+                    <div class="p-2 rounded-xl bg-teal-500/10 text-teal-600 dark:text-teal-400">
+                        <i data-lucide="check-circle-2" class="w-5 h-5"></i>
+                    </div>
+                </div>
+                <div class="mt-3 w-full bg-slate-100 dark:bg-slate-800 h-1.5 rounded-full overflow-hidden">
+                    <div id="kpi-weekly-bar" class="bg-gradient-to-r from-teal-600 to-emerald-500/80 h-full rounded-full transition-all duration-500" style="width: 0%"></div>
+                </div>
+            </div>
+
+            <!-- KPI 2: Mejor Racha Multi-Semana -->
+            <div class="codex-card bg-white dark:bg-slate-900/90 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-4 shadow-sm">
+                <div class="flex items-start justify-between">
+                    <div>
+                        <p class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Mejor Racha</p>
+                        <h2 id="kpi-best-streak" class="text-2xl font-extrabold text-slate-800 dark:text-slate-100 mt-1">0 días</h2>
+                        <p id="kpi-best-streak-habit" class="text-[11px] text-amber-600/90 dark:text-amber-300/90 font-medium mt-1 truncate max-w-[150px]">Activa</p>
+                    </div>
+                    <div class="p-2 rounded-xl bg-amber-500/10 text-amber-500/80">
+                        <i data-lucide="flame" class="w-5 h-5"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- KPI 3: Escudos Activos (Viaje ✈️ + Cheat 🍕 + Salud 🤒) -->
+            <div class="codex-card bg-white dark:bg-slate-900/90 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-4 shadow-sm">
+                <div class="flex items-start justify-between">
+                    <div>
+                        <p class="text-[11px] font-bold uppercase tracking-wider text-sky-600 dark:text-sky-400/90">🛡️ Días Especiales</p>
+                        <h2 id="kpi-shields-status" class="text-lg font-extrabold text-slate-800 dark:text-slate-100 mt-1">0 activos</h2>
+                        <p id="kpi-shields-desc" class="text-[11px] text-slate-500 dark:text-slate-400 mt-1 leading-tight">
+                            ✈️ Viaje, 🍕 Libre o 🤒 Salud protegen tu racha.
+                        </p>
+                    </div>
+                    <span class="text-base opacity-85">🛡️</span>
+                </div>
+            </div>
+
+            <!-- KPI 4: Postulaciones de Trabajo de la Semana -->
+            <div class="codex-card bg-white dark:bg-slate-900/90 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-4 shadow-sm">
+                <div class="flex items-start justify-between">
+                    <div>
+                        <p class="text-[11px] font-bold uppercase tracking-wider text-teal-600 dark:text-teal-400/90">💼 Postulaciones Sem.</p>
+                        <div class="flex items-center gap-2 mt-1.5">
+                            <button onclick="changeJobApplications(-1)" class="w-7 h-7 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 font-bold text-sm flex items-center justify-center text-slate-600 dark:text-slate-300">-</button>
+                            <span id="kpi-job-count" class="text-2xl font-extrabold text-slate-800 dark:text-slate-100 min-w-[28px] text-center">0</span>
+                            <button onclick="changeJobApplications(1)" class="w-7 h-7 rounded-lg bg-teal-600/90 hover:bg-teal-600 text-white font-bold text-sm flex items-center justify-center">+</button>
+                        </div>
+                        <p class="text-[10px] text-slate-500 dark:text-slate-400 mt-1">CVs enviados esta semana</p>
+                    </div>
+                    <span class="text-base opacity-85">📨</span>
+                </div>
+            </div>
+
+            <!-- KPI 5 y 6 (2 columnas): 🎯 TOP 3 FOCO DE HOY (TAREAS FIJADAS CON PIN 📌) -->
+            <div class="codex-card sm:col-span-2 bg-white dark:bg-slate-900/90 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-4 shadow-sm flex flex-col justify-between">
+                <div class="flex items-center justify-between">
+                    <span class="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-300 flex items-center gap-1">
+                        📌 Foco de Hoy (Top 3 Prioridades)
+                    </span>
+                    <a href="#seccion-tareas" class="text-[11px] font-semibold text-sky-600 dark:text-sky-400 hover:underline">Ver todas ↓</a>
+                </div>
+                <div id="top-focus-tasks-box" class="mt-2 space-y-1.5">
+                    <!-- Dinámico por JS -->
+                </div>
+            </div>
+        </section>
+
+        <!-- ==========================================================================
+             MATRIZ INTERACTIVA SEMANAL DE HÁBITOS (CON 3 ESTADOS: ✓ 100%, ⚡ PARCIAL, VACÍO)
+             ========================================================================== -->
+        <section class="codex-card bg-white dark:bg-slate-900/90 border border-slate-200/80 dark:border-slate-800 rounded-2xl shadow-sm overflow-hidden">
+            <div class="p-4 sm:px-6 border-b border-slate-200/80 dark:border-slate-800/80 flex flex-col xl:flex-row xl:items-center xl:justify-between gap-4">
+                <div>
+                    <div class="flex flex-wrap items-center gap-2">
+                        <h2 class="codex-title text-base sm:text-lg font-bold text-slate-800 dark:text-slate-100">
+                            🗓️ Planilla Semanal de Hábitos
+                        </h2>
+                        <span id="total-habits-badge" class="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
+                            7 hábitos
+                        </span>
+                    </div>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                        <strong>1 Clic = ✓ Cumplido (100%)</strong> • <strong>2 Clics = ⚡ Mínimo Viable / Poca Energía (50%, mantiene tu racha viva)</strong> • <strong>3 Clics = Vacío</strong>. Bajo cada día tienes <strong>🍕 Libre</strong>, <strong>✈️ Viaje</strong> y <strong>🤒 Salud</strong>.
+                    </p>
+                </div>
+
+                <!-- Controles Rápidos -->
+                <div class="flex flex-wrap items-center gap-2">
+                    <div class="flex items-center gap-1.5 bg-slate-100 dark:bg-slate-800/80 px-3 py-1.5 rounded-xl border border-slate-200/60 dark:border-slate-700/70">
+                        <span class="text-xs font-medium text-slate-500 dark:text-slate-400">Día activo ("Hoy"):</span>
+                        <select id="active-day-select" onchange="changeReferenceDay(this.value)" class="bg-transparent text-xs font-bold text-slate-800 dark:text-slate-100 focus:outline-none cursor-pointer">
+                            <option value="0" class="dark:bg-slate-900">Lunes</option>
+                            <option value="1" class="dark:bg-slate-900">Martes</option>
+                            <option value="2" class="dark:bg-slate-900">Miércoles</option>
+                            <option value="3" class="dark:bg-slate-900">Jueves</option>
+                            <option value="4" class="dark:bg-slate-900">Viernes</option>
+                            <option value="5" class="dark:bg-slate-900">Sábado</option>
+                            <option value="6" class="dark:bg-slate-900">Domingo</option>
+                        </select>
+                    </div>
+
+                    <select id="category-filter" onchange="setCategoryFilter(this.value)" class="bg-slate-100 dark:bg-slate-800/80 text-xs font-semibold text-slate-700 dark:text-slate-200 px-3 py-2 rounded-xl border border-slate-200/60 dark:border-slate-700/70 focus:outline-none">
+                        <!-- Dinámico con las categorías editables -->
+                    </select>
+
+                    <button onclick="completeAllToday()" class="text-xs font-semibold px-3 py-2 rounded-xl bg-teal-500/10 hover:bg-teal-500/20 text-teal-700 dark:text-teal-300 border border-teal-500/20 transition-colors flex items-center gap-1">
+                        <i data-lucide="check-check" class="w-4 h-4"></i>
+                        <span>Completar Hoy</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Tabla Matriz -->
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse min-w-[960px]">
+                    <thead>
+                        <tr id="matrix-header-row" class="border-b border-slate-200/80 dark:border-slate-800/80 bg-slate-50/60 dark:bg-slate-900/50 text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                            <!-- Dinámico por JS -->
+                        </tr>
+                    </thead>
+                    <tbody id="habits-matrix-body" class="divide-y divide-slate-200/60 dark:divide-slate-800/70 text-sm">
+                        <!-- Dinámico por JS -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- ==========================================================================
+             SECCIÓN DE GRÁFICOS + BITÁCORA DE REFLEXIÓN SEMANAL (12 COLUMNAS)
+             ========================================================================== -->
+        <section class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            <!-- Gráfico Diario / 4 Semanas (5 cols) -->
+            <div class="codex-card lg:col-span-5 bg-white dark:bg-slate-900/90 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-5 shadow-sm flex flex-col justify-between">
+                <div>
+                    <div class="flex items-center justify-between gap-2 pb-3 border-b border-slate-100 dark:border-slate-800">
+                        <div>
+                            <h3 id="chart-main-title" class="codex-title text-base font-bold text-slate-800 dark:text-slate-100">
+                                📊 Rendimiento Diario
+                            </h3>
+                            <p class="text-[11px] text-slate-500 dark:text-slate-400">
+                                Incluye checks completos (✓) y parciales (⚡)
+                            </p>
+                        </div>
+                        <div class="inline-flex rounded-xl bg-slate-100 dark:bg-slate-800 p-1">
+                            <button id="btn-chart-bars" onclick="setChartMode('bars')" class="px-2.5 py-1 rounded-lg text-xs font-semibold bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 shadow-sm">
+                                Días
+                            </button>
+                            <button id="btn-chart-weeks" onclick="setChartMode('weeks')" class="px-2.5 py-1 rounded-lg text-xs font-semibold text-slate-500 dark:text-slate-400">
+                                4 Semanas
+                            </button>
+                        </div>
+                    </div>
+                    <div id="daily-chart-container" class="mt-4 h-52 flex flex-col justify-end select-none"></div>
+                </div>
+                <div class="mt-3 pt-2.5 border-t border-slate-100 dark:border-slate-800 flex flex-wrap items-center justify-between text-[11px] text-slate-500">
+                    <div class="flex items-center gap-3">
+                        <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-teal-500/80"></span>100%</span>
+                        <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-amber-500/75"></span>🍕 Libre</span>
+                        <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-sky-500/75"></span>✈️ Viaje</span>
+                        <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-purple-400/75"></span>🤒 Salud</span>
+                    </div>
+                    <span id="chart-summary-caption" class="font-semibold">Promedio: 0/día</span>
+                </div>
+            </div>
+
+            <!-- Ranking de Rachas Multi-Semana (4 cols) -->
+            <div class="codex-card lg:col-span-4 bg-white dark:bg-slate-900/90 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-5 shadow-sm flex flex-col justify-between">
+                <div>
+                    <div class="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
+                        <div>
+                            <h3 class="codex-title text-base font-bold text-slate-800 dark:text-slate-100">
+                                🔥 Rachas Activas vs. Meta
+                            </h3>
+                            <p class="text-[11px] text-slate-500 dark:text-slate-400">
+                                ⚠️ Alerta "Nunca fallar 2 veces" integrada
+                            </p>
+                        </div>
+                    </div>
+                    <div id="streaks-chart-container" class="mt-4 space-y-3.5 max-h-60 overflow-y-auto pr-1"></div>
+                </div>
+                <div class="mt-3 p-2.5 rounded-xl bg-slate-100/80 dark:bg-slate-800/60 border border-slate-200/70 dark:border-slate-700/60 text-[11px] text-slate-600 dark:text-slate-300">
+                    ⚡ <strong>Tip Experto:</strong> Si tienes poca energía, haz clic dos veces (<strong>⚡ Medio Check</strong>) para mantener viva la racha.
+                </div>
+            </div>
+
+            <!-- 📝 BITÁCORA Y BALANCE DE LA SEMANA (3 cols) -->
+            <div class="codex-card lg:col-span-3 bg-white dark:bg-slate-900/90 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-5 shadow-sm flex flex-col justify-between">
+                <div>
+                    <div class="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
+                        <div>
+                            <h3 class="codex-title text-base font-bold text-slate-800 dark:text-slate-100">
+                                📝 Bitácora Semanal
+                            </h3>
+                            <p class="text-[11px] text-slate-500 dark:text-slate-400">
+                                Balance guardado por cada semana
+                            </p>
+                        </div>
+                        <span class="text-base opacity-85">📋</span>
+                    </div>
+
+                    <div class="mt-3 space-y-3">
+                        <div>
+                            <label class="block text-[11px] font-bold uppercase text-teal-700 dark:text-teal-400/90 mb-1">
+                                ✨ Mayor logro / ¿Qué salió bien?
+                            </label>
+                            <textarea id="weekly-win-input" rows="3" oninput="saveWeeklyReflection()" placeholder="Ej: Avancé 3 módulos del diplomado y envié 2 CVs..." class="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/80 text-xs text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-teal-500/60 resize-none"></textarea>
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-bold uppercase text-sky-700 dark:text-sky-400/90 mb-1">
+                                🎯 Foco / Ajuste para la próxima semana
+                            </label>
+                            <textarea id="weekly-focus-input" rows="3" oninput="saveWeeklyReflection()" placeholder="Ej: Dejar listos los pasajes y pedir hora médica el lunes..." class="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/80 text-xs text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-sky-500/60 resize-none"></textarea>
+                        </div>
+                    </div>
+                </div>
+                <p class="text-[10px] text-slate-400 mt-2 text-right">💾 Guardado automático al escribir</p>
+            </div>
+        </section>
+
+        <!-- ==========================================================================
+             SECCIÓN DE TAREAS PENDIENTES (GRUPOS EDITABLES + NOTAS/LINKS + FECHA + PIN)
+             ========================================================================== -->
+        <section id="seccion-tareas" class="codex-card bg-white dark:bg-slate-900/90 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-5 sm:p-6 shadow-sm">
+            <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-4 border-b border-slate-200/80 dark:border-slate-800">
+                <div class="flex items-start sm:items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 flex items-center justify-center shrink-0">
+                        <i data-lucide="clipboard-list" class="w-5 h-5"></i>
+                    </div>
+                    <div>
+                        <div class="flex flex-wrap items-center gap-2">
+                            <h2 class="codex-title text-lg font-bold text-slate-800 dark:text-slate-100">
+                                📌 Listado de Tareas Pendientes (No Rutinarias)
+                            </h2>
+                            <button onclick="openCategoriesModal()" class="text-xs font-semibold px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 transition flex items-center gap-1">
+                                <i data-lucide="settings-2" class="w-3.5 h-3.5"></i>
+                                <span>Editar / Crear Grupos (ej. ✈️ Viajes)</span>
+                            </button>
+                        </div>
+                        <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                            Puedes editar cualquier tarea, agregarle <strong>sub-notas o links</strong> (vuelos a Australia, paquetes a Costa Rica, datos del doctor), fijarla en tu <strong>📌 Foco de Hoy</strong> o ponerle fecha límite.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Filtros dinámicos de grupos de tareas -->
+                <div class="flex flex-wrap items-center gap-1.5" id="task-filter-buttons">
+                    <!-- Generado dinámicamente según tus grupos personalizados -->
+                </div>
+            </div>
+
+            <!-- Formulario rápido para añadir tarea -->
+            <form onsubmit="addPendingTask(event)" class="mt-4 grid grid-cols-1 md:grid-cols-12 gap-2.5 bg-slate-50 dark:bg-slate-800/40 p-3.5 rounded-2xl border border-slate-200/70 dark:border-slate-800">
+                <div class="md:col-span-4">
+                    <input type="text" id="new-task-title" required="" maxlength="120" placeholder="Título: Ej. Pedir hora al doctor, Cotizar vuelos a Australia..." class="w-full px-3 py-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700/80 text-xs sm:text-sm text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-1 focus:ring-teal-500">
+                </div>
+                <div class="md:col-span-3">
+                    <input type="text" id="new-task-notes" maxlength="300" placeholder="Nota o Link opcional (ej. aerolínea, clínica, teléfono...)" class="w-full px-3 py-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700/80 text-xs text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-1 focus:ring-teal-500">
+                </div>
+                <div class="md:col-span-2">
+                    <select id="new-task-tag" class="w-full px-2.5 py-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700/80 text-xs font-semibold text-slate-700 dark:text-slate-200 focus:outline-none">
+                        <!-- Dinámico con state.taskGroups -->
+                    </select>
+                </div>
+                <div class="md:col-span-2 flex gap-1.5">
+                    <select id="new-task-priority" class="w-1/2 px-2 py-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700/80 text-xs font-semibold text-slate-700 dark:text-slate-200">
+                        <option value="alta">🔥 Alta</option>
+                        <option value="media" selected="">⚡ Media</option>
+                        <option value="baja">🌱 Baja</option>
+                    </select>
+                    <input type="date" id="new-task-due" title="Fecha límite opcional" class="w-1/2 px-2 py-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700/80 text-[11px] text-slate-700 dark:text-slate-200">
+                </div>
+                <div class="md:col-span-1">
+                    <button type="submit" class="codex-btn-primary w-full h-full min-h-[38px] rounded-xl bg-teal-600 hover:bg-teal-500 text-white font-semibold text-xs shadow-sm transition flex items-center justify-center gap-1">
+                        <i data-lucide="plus" class="w-4 h-4"></i>
+                        <span>Crear</span>
+                    </button>
+                </div>
+            </form>
+
+            <!-- Grilla de Tareas Pendientes -->
+            <div id="pending-tasks-container" class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-3">
+                <!-- Generado por JS -->
+            </div>
+        </section>
+    </main>
+
+    <!-- ==========================================================================
+         MODAL 1: GESTOR EDITABLE DE GRUPOS DE TAREAS Y CATEGORÍAS DE HÁBITOS
+         ========================================================================== -->
+    <div id="categories-modal" class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm">
+        <div class="codex-card bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl max-w-2xl w-full p-6 shadow-2xl max-h-[90vh] overflow-y-auto">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-slate-800">
+                <div class="flex items-center gap-2">
+                    <i data-lucide="tags" class="w-5 h-5 text-teal-500"></i>
+                    <h3 class="codex-title text-lg font-bold text-slate-800 dark:text-slate-100">
+                        Personalizar Grupos de Tareas y Categorías
+                    </h3>
+                </div>
+                <button onclick="closeCategoriesModal()" class="p-1.5 rounded-lg text-slate-400 hover:text-white">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
+                <!-- Columna 1: Grupos de Tareas Pendientes -->
+                <div>
+                    <h4 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">
+                        📌 Grupos de Tareas Pendientes (Abajo)
+                    </h4>
+                    <p class="text-[11px] text-slate-500 dark:text-slate-400 mb-3">
+                        Aquí puedes renombrar, agregar o quitar grupos (ej. <strong>✈️ Viajes</strong>).
+                    </p>
+                    <form onsubmit="addTaskGroup(event)" class="flex gap-1.5 mb-3">
+                        <input type="text" id="new-task-group-input" required="" maxlength="35" placeholder="Ej: 🎸 Música, 🛒 Compras..." class="flex-1 px-3 py-1.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-800 dark:text-slate-100">
+                        <button type="submit" class="px-3 py-1.5 rounded-xl bg-teal-600 text-white text-xs font-semibold">+ Añadir</button>
+                    </form>
+                    <div id="task-groups-manager-list" class="space-y-1.5 max-h-60 overflow-y-auto pr-1"></div>
+                </div>
+
+                <!-- Columna 2: Categorías de Hábitos Semanales -->
+                <div>
+                    <h4 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">
+                        🗓️ Categorías de Hábitos (Tabla Superior)
+                    </h4>
+                    <p class="text-[11px] text-slate-500 dark:text-slate-400 mb-3">
+                        Crea o edita las categorías para organizar tus hábitos semanales.
+                    </p>
+                    <form onsubmit="addHabitCategory(event)" class="flex gap-1.5 mb-3">
+                        <input type="text" id="new-habit-cat-input" required="" maxlength="35" placeholder="Ej: 🧘 Mindfulness, 🇬🇧 Inglés..." class="flex-1 px-3 py-1.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-800 dark:text-slate-100">
+                        <button type="submit" class="px-3 py-1.5 rounded-xl bg-teal-600 text-white text-xs font-semibold">+ Añadir</button>
+                    </form>
+                    <div id="habit-cats-manager-list" class="space-y-1.5 max-h-60 overflow-y-auto pr-1"></div>
+                </div>
+            </div>
+
+            <div class="mt-6 pt-3 border-t border-slate-200 dark:border-slate-800 flex justify-end">
+                <button onclick="closeCategoriesModal()" class="codex-btn-primary px-5 py-2 rounded-xl bg-teal-600 hover:bg-teal-500 text-white text-xs font-semibold">
+                    Listo
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==========================================================================
+         MODAL 2: EDITAR TAREA PENDIENTE (TÍTULO, GRUPO, NOTAS/LINKS, FECHA)
+         ========================================================================== -->
+    <div id="edit-task-modal" class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm">
+        <div class="codex-card bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl max-w-md w-full p-6 shadow-2xl">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-slate-800">
+                <h3 class="codex-title text-base font-bold text-slate-800 dark:text-slate-100">✏️ Editar Tarea Pendiente</h3>
+                <button onclick="closeEditTaskModal()" class="p-1 rounded-lg text-slate-400 hover:text-white">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+            <form onsubmit="saveEditedTask(event)" class="mt-4 space-y-3">
+                <input type="hidden" id="edit-task-id">
+                <div>
+                    <label class="block text-xs font-bold text-slate-400 mb-1">Título de la tarea</label>
+                    <input type="text" id="edit-task-title" required="" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm text-slate-800 dark:text-slate-100">
+                </div>
+                <div class="grid grid-cols-2 gap-2.5">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-400 mb-1">Grupo</label>
+                        <select id="edit-task-tag" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-800 dark:text-slate-100"></select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-400 mb-1">Prioridad</label>
+                        <select id="edit-task-priority" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-800 dark:text-slate-100">
+                            <option value="alta">🔥 Alta</option>
+                            <option value="media">⚡ Media</option>
+                            <option value="baja">🌱 Baja</option>
+                        </select>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-400 mb-1">Fecha límite (Opcional)</label>
+                    <input type="date" id="edit-task-due" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-800 dark:text-slate-100">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-400 mb-1">Sub-notas, detalles o enlaces (URLs)</label>
+                    <textarea id="edit-task-notes" rows="3" placeholder="Pega aquí links de vuelos, precios de paquetes a Costa Rica, teléfono de la clínica..." class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-800 dark:text-slate-100"></textarea>
+                </div>
+                <div class="pt-3 flex justify-end gap-2">
+                    <button type="button" onclick="closeEditTaskModal()" class="px-4 py-2 rounded-xl text-xs font-semibold text-slate-400">Cancelar</button>
+                    <button type="submit" class="codex-btn-primary px-5 py-2 rounded-xl bg-teal-600 hover:bg-teal-500 text-white text-xs font-semibold">Guardar Cambios</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ==========================================================================
+         MODAL 3: CREAR / EDITAR HÁBITO SEMANAL
+         ========================================================================== -->
+    <div id="habit-modal" class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm">
+        <div class="codex-card bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl max-w-lg w-full p-6 shadow-2xl max-h-[92vh] overflow-y-auto">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-slate-800">
+                <h3 id="modal-title" class="codex-title text-lg font-bold text-slate-800 dark:text-slate-100">Nuevo Hábito / Actividad</h3>
+                <button onclick="closeHabitModal()" class="p-1.5 rounded-lg text-slate-400 hover:text-white">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+
+            <form id="habit-form" onsubmit="saveHabitForm(event)" class="mt-4 space-y-4">
+                <input type="hidden" id="habit-id-input">
+                <input type="hidden" id="habit-goal-input" value="4">
+
+                <div>
+                    <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1">Nombre del hábito *</label>
+                    <input type="text" id="habit-name-input" required="" maxlength="70" placeholder="Ej. Estudiar para el Diplomado" class="w-full px-3.5 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm text-slate-800 dark:text-slate-100">
+                </div>
+
+                <div>
+                    <div class="flex items-center justify-between mb-1.5">
+                        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400">Meta de días por semana</label>
+                        <span id="goal-mode-helper" class="text-xs font-bold text-teal-500">4 días/semana</span>
+                    </div>
+                    <div class="grid grid-cols-7 gap-1.5" id="freq-buttons-grid">
+                        <button type="button" onclick="selectTargetDays(1)" data-days="1" class="freq-btn py-2 rounded-xl border text-xs font-bold">🎯 1d</button>
+                        <button type="button" onclick="selectTargetDays(2)" data-days="2" class="freq-btn py-2 rounded-xl border text-xs font-bold">2d</button>
+                        <button type="button" onclick="selectTargetDays(3)" data-days="3" class="freq-btn py-2 rounded-xl border text-xs font-bold">3d</button>
+                        <button type="button" onclick="selectTargetDays(4)" data-days="4" class="freq-btn py-2 rounded-xl border text-xs font-bold">4d</button>
+                        <button type="button" onclick="selectTargetDays(5)" data-days="5" class="freq-btn py-2 rounded-xl border text-xs font-bold">5d</button>
+                        <button type="button" onclick="selectTargetDays(6)" data-days="6" class="freq-btn py-2 rounded-xl border text-xs font-bold">6d</button>
+                        <button type="button" onclick="selectTargetDays(7)" data-days="7" class="freq-btn py-2 rounded-xl border text-xs font-bold">7d</button>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1">Categoría</label>
+                        <select id="habit-category-input" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm text-slate-800 dark:text-slate-100"></select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1">Día sugerido (★)</label>
+                        <select id="habit-pref-day-input" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm text-slate-800 dark:text-slate-100">
+                            <option value="-1">Cualquier día (Flexible)</option>
+                            <option value="0">Lunes</option><option value="1">Martes</option><option value="2">Miércoles</option>
+                            <option value="3">Jueves</option><option value="4">Viernes</option><option value="5">Sábado</option><option value="6">Domingo</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1">Ícono</label>
+                    <div id="emoji-selector" class="flex flex-wrap gap-1.5"></div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1">Color (Tonos Suaves)</label>
+                    <div id="color-selector" class="flex flex-wrap gap-2"></div>
+                </div>
+
+                <div class="pt-3 border-t border-slate-200 dark:border-slate-800 flex justify-end gap-2">
+                    <button type="button" onclick="closeHabitModal()" class="px-4 py-2 rounded-xl text-xs font-semibold text-slate-400">Cancelar</button>
+                    <button type="submit" class="codex-btn-primary px-5 py-2 rounded-xl bg-teal-600 hover:bg-teal-500 text-white text-xs font-semibold">Guardar Hábito</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ==========================================================================
+         MODAL 4: KIT GITHUB (DESCARGA DE INDEX.HTML, README.MD Y RESPALDO .JSON)
+         ========================================================================== -->
+    <div id="backup-modal" class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm">
+        <div class="codex-card bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-4 max-h-[92vh] overflow-y-auto">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-slate-800">
+                <div class="flex items-center gap-2">
+                    <i data-lucide="package-check" class="w-5 h-5 text-teal-400"></i>
+                    <h3 class="codex-title text-base font-bold text-slate-800 dark:text-slate-100">📦 Kit de Archivos para GitHub y Respaldos</h3>
+                </div>
+                <button onclick="closeBackupModal()" class="p-1 text-slate-400 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
+            </div>
+
+            <!-- Explicación clara de qué pide GitHub -->
+            <div class="p-3.5 rounded-xl bg-teal-500/10 border border-teal-500/25 text-xs space-y-1.5">
+                <p class="font-bold text-teal-700 dark:text-teal-300">💡 ¿Qué archivos te pide realmente GitHub?</p>
+                <p class="text-slate-600 dark:text-slate-300 leading-relaxed">
+                    Para que tu tablero funcione en <strong>GitHub Pages</strong> solo es obligatorio subir <strong>1 archivo: <code>index.html</code></strong>. El archivo <code>README.md</code> es opcional (la portada del proyecto) y el <code>.json</code> es tu copia de seguridad personal.
+                </p>
+            </div>
+
+            <!-- Botón Maestro: Descargar los 3 archivos de una vez -->
+            <div class="space-y-2.5">
+                <button onclick="downloadCompleteGitHubKit()" class="codex-btn-primary w-full py-3 px-4 rounded-xl bg-teal-600 hover:bg-teal-500 text-white text-xs font-bold flex items-center justify-center gap-2 shadow-md">
+                    <i data-lucide="sparkles" class="w-4 h-4"></i>
+                    <span>🚀 Descargar Kit Completo para GitHub (3 Archivos)</span>
+                </button>
+
+                <p class="text-[11px] font-semibold uppercase tracking-wider text-slate-400 pt-2">O descárgalos por separado:</p>
+
+                <!-- 1. Descargar index.html -->
+                <button onclick="downloadIndexHtmlFile()" class="w-full py-2.5 px-4 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-100 border border-slate-200 dark:border-slate-700 text-xs font-semibold flex items-center justify-between transition">
+                    <span class="flex items-center gap-2">
+                        <i data-lucide="file-code" class="w-4 h-4 text-sky-400"></i>
+                        <span>1. Descargar <strong>index.html</strong> (La Aplicación Web)</span>
+                    </span>
+                    <span class="text-[10px] px-2 py-0.5 rounded bg-sky-500/15 text-sky-400 font-bold">Obligatorio en GitHub</span>
+                </button>
+
+                <!-- 2. Descargar README.md -->
+                <button onclick="downloadReadmeFile()" class="w-full py-2.5 px-4 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-100 border border-slate-200 dark:border-slate-700 text-xs font-semibold flex items-center justify-between transition">
+                    <span class="flex items-center gap-2">
+                        <i data-lucide="book-open" class="w-4 h-4 text-amber-400"></i>
+                        <span>2. Descargar <strong>README.md</strong> (Portada para GitHub)</span>
+                    </span>
+                    <span class="text-[10px] px-2 py-0.5 rounded bg-amber-500/15 text-amber-400 font-bold">Recomendado</span>
+                </button>
+
+                <!-- 3. Descargar Respaldo .json -->
+                <button onclick="exportDataJson()" class="w-full py-2.5 px-4 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-100 border border-slate-200 dark:border-slate-700 text-xs font-semibold flex items-center justify-between transition">
+                    <span class="flex items-center gap-2">
+                        <i data-lucide="database" class="w-4 h-4 text-teal-400"></i>
+                        <span>3. Descargar <strong>habitpulse-backup.json</strong> (Tus Datos)</span>
+                    </span>
+                    <span class="text-[10px] px-2 py-0.5 rounded bg-teal-500/15 text-teal-400 font-bold">Respaldo Local</span>
+                </button>
+
+                <!-- Restaurar desde archivo .json -->
+                <div class="pt-3 border-t border-slate-200 dark:border-slate-800 space-y-2">
+                    <p class="text-[11px] font-semibold uppercase tracking-wider text-slate-400">Restaurar copias de seguridad:</p>
+                    <label class="w-full py-2.5 px-4 rounded-xl bg-slate-100 dark:bg-slate-800/60 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-dashed border-slate-300 dark:border-slate-700 text-xs font-semibold flex items-center justify-center gap-2 cursor-pointer transition">
+                        <i data-lucide="upload" class="w-4 h-4 text-teal-400"></i>
+                        <span>Cargar / Restaurar desde Archivo (.json)</span>
+                        <input type="file" accept=".json" onchange="importDataJson(event)" class="hidden">
+                    </label>
+
+                    <button onclick="resetToDefaultDemo()" class="w-full py-2 px-4 rounded-xl bg-rose-500/10 hover:bg-rose-500/15 text-rose-400 text-xs font-semibold">
+                        ↺ Restaurar Datos de Demostración Originales
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        /* ==========================================================================
+           ESTADO GLOBAL Y PALETA DE COLORES MATE / REFINADA (SIN TONOS CHILLONES)
+           ========================================================================== */
+        const STORAGE_KEY = 'habitpulse_v10_ultimate_wow';
+        const THEME_KEY = 'habitpulse_theme_v11';
+        const BASE_MONDAY_ISO = '2026-10-19';
+
+        // Captura limpia del código fuente inicial para poder exportarlo como index.html puro
+        let INITIAL_SOURCE_HTML = '';
+
+        const DAYS_OF_WEEK = [
+            { short: 'Lun', full: 'Lunes' },
+            { short: 'Mar', full: 'Martes' },
+            { short: 'Mié', full: 'Miércoles' },
+            { short: 'Jue', full: 'Jueves' },
+            { short: 'Vie', full: 'Viernes' },
+            { short: 'Sáb', full: 'Sábado' },
+            { short: 'Dom', full: 'Domingo' }
+        ];
+
+        const MONTHS_SHORT = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+        const EMOJI_OPTIONS = ['🎓', '💼', '🏋️', '⚡', '🥗', '🏃', '⚽', '📚', '✈️', '💧', '🧘', '🎯', '💻', '🧠'];
+
+        // Paleta suavizada: tonos salvia/esmeralda mate, ocre/champán, terracota suave, azul pizarra e índigo sereno
+        const COLOR_PALETTE = {
+            emerald: {
+                name: 'Salvia',
+                bgCheck: 'bg-teal-600/85 hover:bg-teal-600 text-white border border-teal-400/30',
+                badge: 'bg-teal-500/10 text-teal-600 dark:text-teal-300 border-teal-500/20',
+                bar: 'from-teal-600/90 to-emerald-500/80',
+                dot: 'bg-teal-500'
+            },
+            amber: {
+                name: 'Champán',
+                bgCheck: 'bg-amber-600/80 hover:bg-amber-600 text-white border border-amber-400/30',
+                badge: 'bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-500/20',
+                bar: 'from-amber-600/85 to-yellow-500/75',
+                dot: 'bg-amber-500'
+            },
+            rose: {
+                name: 'Terracota',
+                bgCheck: 'bg-rose-600/75 hover:bg-rose-600 text-white border border-rose-400/30',
+                badge: 'bg-rose-500/10 text-rose-600 dark:text-rose-300 border-rose-500/20',
+                dot: 'bg-rose-400',
+                bar: 'from-rose-600/80 to-pink-500/70'
+            },
+            cyan: {
+                name: 'Acero',
+                bgCheck: 'bg-sky-600/80 hover:bg-sky-600 text-white border border-sky-400/30',
+                badge: 'bg-sky-500/10 text-sky-600 dark:text-sky-300 border-sky-500/20',
+                bar: 'from-sky-600/85 to-cyan-500/75',
+                dot: 'bg-sky-400'
+            },
+            violet: {
+                name: 'Índigo Mate',
+                bgCheck: 'bg-indigo-600/75 hover:bg-indigo-600 text-white border border-indigo-400/30',
+                badge: 'bg-indigo-500/10 text-indigo-600 dark:text-indigo-300 border-indigo-500/20',
+                bar: 'from-indigo-600/80 to-slate-500/80',
+                dot: 'bg-indigo-400'
+            }
+        };
+
+        function parseIsoDate(isoStr) {
+            const [y, m, d] = isoStr.split('-').map(Number);
+            return new Date(y, m - 1, d, 12, 0, 0);
+        }
+        function formatIsoDate(dateObj) {
+            const y = dateObj.getFullYear();
+            const m = String(dateObj.getMonth() + 1).padStart(2, '0');
+            const d = String(dateObj.getDate()).padStart(2, '0');
+            return `${y}-${m}-${d}`;
+        }
+        function addDaysToIso(isoStr, days) {
+            const dt = parseIsoDate(isoStr);
+            dt.setDate(dt.getDate() + days);
+            return formatIsoDate(dt);
+        }
+        function getWeekDatesArray(mondayIso) {
+            const arr = [];
+            for (let i = 0; i < 7; i++) {
+                const dt = parseIsoDate(addDaysToIso(mondayIso, i));
+                arr.push({
+                    dayIndex: i,
+                    shortName: DAYS_OF_WEEK[i].short,
+                    fullName: DAYS_OF_WEEK[i].full,
+                    dayNumber: dt.getDate(),
+                    monthShort: MONTHS_SHORT[dt.getMonth()],
+                    year: dt.getFullYear()
+                });
+            }
+            return arr;
+        }
+        function formatWeekRangeLabel(mondayIso) {
+            const days = getWeekDatesArray(mondayIso);
+            const first = days[0], last = days[6];
+            return first.monthShort === last.monthShort
+                ? `Lun ${first.dayNumber} – Dom ${last.dayNumber} ${first.monthShort} ${last.year}`
+                : `Lun ${first.dayNumber} ${first.monthShort} – Dom ${last.dayNumber} ${last.monthShort}`;
+        }
+
+        /* ==========================================================================
+           DATOS POR DEFECTO
+           ========================================================================== */
+        function getDefaultData() {
+            const habitCategories = [
+                'Mente & Estudio',
+                'Carrera & Trabajo',
+                'Fuerza & Fitness',
+                'Nutrición',
+                'Cardio & Salud',
+                'Recreación & Deporte'
+            ];
+
+            const taskGroups = [
+                '✈️ Viajes',
+                '🩺 Salud & Doctor',
+                '💼 Carrera & CV',
+                '🎓 Diplomado',
+                '🏠 Personal'
+            ];
+
+            const habits = [
+                { id: 'hab-diplomado', name: 'Estudiar para el Diplomado (Bloque de enfoque)', category: 'Mente & Estudio', emoji: '🎓', color: 'violet', targetDays: 4, preferredDay: -1 },
+                { id: 'hab-trabajo',   name: 'Buscar trabajo / Postulaciones y LinkedIn',      category: 'Carrera & Trabajo', emoji: '💼', color: 'emerald', targetDays: 1, preferredDay: 2 },
+                { id: 'hab-1',         name: 'Entrenamiento de fuerza / Calistenia',           category: 'Fuerza & Fitness', emoji: '🏋️', color: 'emerald', targetDays: 4, preferredDay: -1 },
+                { id: 'hab-2',         name: 'Suplementación de creatina (5g)',                category: 'Nutrición',        emoji: '⚡', color: 'amber',   targetDays: 7, preferredDay: -1 },
+                { id: 'hab-3',         name: 'Alimentación limpia (Flexible con Cheat Day)',   category: 'Nutrición',        emoji: '🥗', color: 'rose',    targetDays: 6, preferredDay: -1 },
+                { id: 'hab-4',         name: 'Running / HIIT 30 min',                          category: 'Cardio & Salud',   emoji: '🏃', color: 'cyan',    targetDays: 3, preferredDay: -1 },
+                { id: 'hab-5',         name: 'Partido de fútbol / Deporte semanal',            category: 'Recreación & Deporte', emoji: '⚽', color: 'violet', targetDays: 1, preferredDay: 5 }
+            ];
+
+            const pendingTasks = [
+                {
+                    id: 'task-1',
+                    title: 'Pedir hora al doctor (chequeo médico general)',
+                    tag: '🩺 Salud & Doctor',
+                    priority: 'alta',
+                    dueDate: '2026-10-23',
+                    notes: 'Llamar a la clínica o agendar por portal web en la mañana.',
+                    pinned: true,
+                    done: false
+                },
+                {
+                    id: 'task-2',
+                    title: 'Buscar información sobre viaje a Australia',
+                    tag: '✈️ Viajes',
+                    priority: 'media',
+                    dueDate: '2026-10-30',
+                    notes: 'Revisar requisitos de visa, temporada de vuelos y ruta Santiago - Sydney.',
+                    pinned: true,
+                    done: false
+                },
+                {
+                    id: 'task-3',
+                    title: 'Buscar información sobre paquetes de viajes a Costa Rica',
+                    tag: '✈️ Viajes',
+                    priority: 'media',
+                    dueDate: '',
+                    notes: 'Comparar paquetes con vuelos + hotel en Arenal y Manuel Antonio.',
+                    pinned: false,
+                    done: false
+                },
+                {
+                    id: 'task-4',
+                    title: 'Actualizar CV y portafolio base para las postulaciones semanales',
+                    tag: '💼 Carrera & CV',
+                    priority: 'alta',
+                    dueDate: '2026-10-22',
+                    notes: 'Destacar proyectos recientes y certificaciones del Diplomado.',
+                    pinned: true,
+                    done: false
+                },
+                {
+                    id: 'task-5',
+                    title: 'Descargar lecturas y calendario de evaluaciones del Diplomado',
+                    tag: '🎓 Diplomado',
+                    priority: 'media',
+                    dueDate: '',
+                    notes: 'Guardado en carpeta del computador.',
+                    pinned: false,
+                    done: true
+                }
+            ];
+
+            const weekMinus1 = addDaysToIso(BASE_MONDAY_ISO, -7);
+            const weekCurrent = BASE_MONDAY_ISO;
+
+            const weeksData = {
+                [weekMinus1]: {
+                    records: {
+                        'hab-diplomado': [1, 1, 0.5, 0, 1, 0, 0],
+                        'hab-trabajo':   [0, 0, 1, 0, 0, 0, 0],
+                        'hab-1':         [1, 1, 0, 1, 1, 0, 0],
+                        'hab-2':         [1, 1, 1, 1, 1, 1, 1],
+                        'hab-3':         [1, 1, 1, 1, 1, 1, 0],
+                        'hab-4':         [1, 0, 1, 0, 1, 0, 0],
+                        'hab-5':         [0, 0, 0, 0, 0, 1, 0]
+                    },
+                    cheatDays: [6],
+                    travelDays: [],
+                    sickDays: [],
+                    jobApplications: 3,
+                    reflectionWin: 'Cumplí todas las metas del diplomado y envié 3 postulaciones.',
+                    reflectionFocus: 'Mantener el ritmo de entrenamiento y cotizar viaje a Australia.'
+                },
+                [weekCurrent]: {
+                    records: {
+                        'hab-diplomado': [1, 1, 0, 0.5, 1, 0, 0],
+                        'hab-trabajo':   [0, 0, 1, 0, 0, 0, 0],
+                        'hab-1':         [1, 1, 0, 1, 0, 0, 0],
+                        'hab-2':         [1, 1, 1, 1, 1, 0, 1],
+                        'hab-3':         [1, 1, 1, 1, 0, 0, 1],
+                        'hab-4':         [0, 1, 1, 0, 0, 0, 0],
+                        'hab-5':         [0, 0, 0, 0, 0, 1, 0]
+                    },
+                    cheatDays: [5],
+                    travelDays: [4],
+                    sickDays: [],
+                    jobApplications: 2,
+                    reflectionWin: 'Logré avanzar en el diplomado incluso el jueves con poca energía (⚡).',
+                    reflectionFocus: 'Dejar pedida la hora al doctor y revisar vuelos.'
+                }
+            };
+
+            return { habitCategories, taskGroups, habits, pendingTasks, weeksData };
+        }
+
+        let state = {
+            habitCategories: [],
+            taskGroups: [],
+            habits: [],
+            weeksData: {},
+            pendingTasks: [],
+            currentWeekMonday: BASE_MONDAY_ISO,
+            referenceDayIndex: 1,
+            categoryFilter: 'TODOS',
+            taskFilter: 'TODAS',
+            chartMode: 'bars',
+            selectedEmoji: '🎓',
+            selectedColor: 'violet',
+            selectedTargetDays: 4,
+            themeMode: 'codex'
+        };
+
+        /* ==========================================================================
+           TEMPORIZADOR POMODORO INTEGRADO
+           ========================================================================== */
+        let pomoState = {
+            presetMinutes: 25,
+            remainingSeconds: 25 * 60,
+            running: false,
+            intervalId: null
+        };
+
+        function updatePomodoroDisplay() {
+            const mins = String(Math.floor(pomoState.remainingSeconds / 60)).padStart(2, '0');
+            const secs = String(pomoState.remainingSeconds % 60).padStart(2, '0');
+            document.getElementById('pomo-time-display').textContent = `${mins}:${secs}`;
+            const startBtn = document.getElementById('pomo-start-btn');
+            startBtn.textContent = pomoState.running ? 'Pausar' : 'Iniciar';
+            startBtn.className = pomoState.running
+                ? 'px-2.5 py-1 rounded-lg bg-amber-600/80 hover:bg-amber-600 text-white text-[11px] font-semibold transition'
+                : 'px-2.5 py-1 rounded-lg bg-slate-700 hover:bg-slate-600 text-slate-100 text-[11px] font-semibold transition';
+        }
+
+        function togglePomodoro() {
+            if (pomoState.running) {
+                clearInterval(pomoState.intervalId);
+                pomoState.running = false;
+            } else {
+                pomoState.running = true;
+                pomoState.intervalId = setInterval(() => {
+                    if (pomoState.remainingSeconds > 0) {
+                        pomoState.remainingSeconds--;
+                        updatePomodoroDisplay();
+                    } else {
+                        clearInterval(pomoState.intervalId);
+                        pomoState.running = false;
+                        pomoState.remainingSeconds = pomoState.presetMinutes * 60;
+                        updatePomodoroDisplay();
+                        onPomodoroComplete();
+                    }
+                }, 1000);
+            }
+            updatePomodoroDisplay();
+        }
+
+        function switchPomodoroPreset() {
+            clearInterval(pomoState.intervalId);
+            pomoState.running = false;
+            pomoState.presetMinutes = pomoState.presetMinutes === 25 ? 45 : 25;
+            pomoState.remainingSeconds = pomoState.presetMinutes * 60;
+            document.getElementById('pomo-preset-btn').textContent = `${pomoState.presetMinutes}m`;
+            updatePomodoroDisplay();
+            showToast(`Reloj Pomodoro ajustado a ${pomoState.presetMinutes} minutos`, 'clock');
+        }
+
+        function resetPomodoro() {
+            clearInterval(pomoState.intervalId);
+            pomoState.running = false;
+            pomoState.remainingSeconds = pomoState.presetMinutes * 60;
+            updatePomodoroDisplay();
+        }
+
+        function onPomodoroComplete() {
+            const weekObj = getCurrentWeekObject();
+            const dipHabit = state.habits.find(h => h.id === 'hab-diplomado' || h.name.toLowerCase().includes('diplomado'));
+            if (dipHabit) {
+                weekObj.records[dipHabit.id][state.referenceDayIndex] = 1;
+                saveState();
+                renderAll();
+                showToast(`🎉 ¡Bloque Pomodoro completado! Se marcó "${dipHabit.name}" hoy.`, 'award');
+            } else {
+                showToast('🎉 ¡Sesión de enfoque Pomodoro completada!', 'award');
+            }
+        }
+
+        /* ==========================================================================
+           SISTEMA DE 3 TEMAS CON TONOS REFINADOS Y DESCANSADOS
+           ========================================================================== */
+        function loadTheme() {
+            let saved = localStorage.getItem(THEME_KEY) || 'codex';
+            if (saved === 'wow') saved = 'codex';
+            setThemeMode(saved, false);
+        }
+
+        function setThemeMode(mode, notify = true) {
+            state.themeMode = mode;
+            localStorage.setItem(THEME_KEY, mode);
+
+            const htmlEl = document.documentElement;
+            htmlEl.classList.remove('dark', 'theme-codex');
+
+            if (mode === 'dark') {
+                htmlEl.classList.add('dark');
+            } else if (mode === 'codex') {
+                htmlEl.classList.add('dark', 'theme-codex');
+            }
+
+            const modes = ['dark', 'light', 'codex'];
+            modes.forEach(m => {
+                const btn = document.getElementById(`theme-btn-${m}`);
+                if (!btn) return;
+                if (m === mode) {
+                    btn.className = m === 'codex'
+                        ? 'px-2.5 py-1 rounded-lg text-xs font-bold bg-slate-700/90 text-amber-200/95 shadow-sm border border-amber-300/35 flex items-center gap-1'
+                        : 'px-2.5 py-1 rounded-lg text-xs font-bold bg-teal-600 text-white shadow-sm flex items-center gap-1';
+                } else {
+                    btn.className = 'px-2.5 py-1 rounded-lg text-xs font-medium text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 flex items-center gap-1';
+                }
+            });
+
+            const badge = document.getElementById('app-mode-badge');
+            const logoBox = document.getElementById('brand-logo-box');
+            if (mode === 'codex') {
+                badge.textContent = '✨ Códice Mate';
+                badge.className = 'text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-slate-800 text-amber-200/90 border border-amber-300/30';
+                logoBox.textContent = '✨';
+                logoBox.className = 'w-10 h-10 rounded-xl bg-gradient-to-br from-slate-700 via-slate-800 to-amber-900/60 border border-amber-300/35 flex items-center justify-center text-amber-200 shadow-sm shrink-0 text-lg';
+            } else {
+                badge.textContent = 'Planilla Pro';
+                badge.className = 'text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-teal-500/10 text-teal-700 dark:text-teal-300 border border-teal-500/25';
+                logoBox.textContent = '⚡';
+                logoBox.className = 'w-10 h-10 rounded-xl bg-gradient-to-br from-teal-600 to-slate-700 flex items-center justify-center text-white shadow-sm shrink-0 text-lg';
+            }
+
+            if (notify) {
+                const msg = mode === 'codex'
+                    ? '✨ Tema Códice activado (Colores mate suaves)'
+                    : mode === 'dark'
+                    ? '🌙 Tema Oscuro Pro activado'
+                    : '☀️ Tema Claro activado';
+                showToast(msg, 'sparkles');
+            }
+        }
+
+        /* ==========================================================================
+           FONDO ANIMADO SUTIL PARA EL TEMA CÓDICE
+           ========================================================================== */
+        function initCodexAnimatedBackground() {
+            const canvas = document.getElementById('codex-bg-canvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            let width = canvas.width = window.innerWidth;
+            let height = canvas.height = window.innerHeight;
+
+            window.addEventListener('resize', () => {
+                width = canvas.width = window.innerWidth;
+                height = canvas.height = window.innerHeight;
+            });
+
+            const paletteColors = [
+                'rgba(125, 175, 215,', // Azul acero sereno
+                'rgba(210, 190, 145,', // Champán suave
+                'rgba(95, 165, 145,'   // Verde salvia tenue
+            ];
+
+            const particles = Array.from({ length: 48 }, (_, idx) => ({
+                x: Math.random() * width,
+                y: Math.random() * height,
+                r: Math.random() * 1.7 + 0.5,
+                vx: (Math.random() - 0.5) * 0.2,
+                vy: -Math.random() * 0.24 - 0.04,
+                alpha: Math.random() * 0.42 + 0.12,
+                hue: paletteColors[idx % paletteColors.length]
+            }));
+
+            let angle = 0;
+            function animateBg() {
+                if (state.themeMode === 'codex') {
+                    ctx.clearRect(0, 0, width, height);
+                    angle += 0.002;
+
+                    const grad1 = ctx.createRadialGradient(
+                        width * (0.28 + Math.sin(angle) * 0.06),
+                        height * (0.22 + Math.cos(angle * 0.8) * 0.05),
+                        20,
+                        width * 0.28,
+                        height * 0.22,
+                        Math.max(width, height) * 0.48
+                    );
+                    grad1.addColorStop(0, 'rgba(71, 118, 168, 0.05)');
+                    grad1.addColorStop(1, 'transparent');
+                    ctx.fillStyle = grad1;
+                    ctx.fillRect(0, 0, width, height);
+
+                    for (let i = 0; i < particles.length; i++) {
+                        const p = particles[i];
+                        p.x += p.vx;
+                        p.y += p.vy;
+                        if (p.y < -10) { p.y = height + 10; p.x = Math.random() * width; }
+                        if (p.x < -10) p.x = width + 10;
+                        if (p.x > width + 10) p.x = -10;
+
+                        ctx.beginPath();
+                        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+                        ctx.fillStyle = `${p.hue}${p.alpha})`;
+                        ctx.fill();
+
+                        for (let j = i + 1; j < particles.length; j++) {
+                            const p2 = particles[j];
+                            const dx = p.x - p2.x;
+                            const dy = p.y - p2.y;
+                            const dist = Math.sqrt(dx * dx + dy * dy);
+                            if (dist < 110) {
+                                ctx.beginPath();
+                                ctx.moveTo(p.x, p.y);
+                                ctx.lineTo(p2.x, p2.y);
+                                ctx.strokeStyle = `rgba(197, 176, 135, ${(1 - dist / 110) * 0.055})`;
+                                ctx.lineWidth = 0.5;
+                                ctx.stroke();
+                            }
+                        }
+                    }
+                }
+                requestAnimationFrame(animateBg);
+            }
+            animateBg();
+        }
+
+        /* ==========================================================================
+           INICIALIZACIÓN Y ALMACENAMIENTO LOCAL
+           ========================================================================== */
+        function ensureWeekInitialized(mondayIso) {
+            if (!state.weeksData[mondayIso]) {
+                state.weeksData[mondayIso] = {
+                    records: {},
+                    cheatDays: [],
+                    travelDays: [],
+                    sickDays: [],
+                    jobApplications: 0,
+                    reflectionWin: '',
+                    reflectionFocus: ''
+                };
+            }
+            const w = state.weeksData[mondayIso];
+            if (!Array.isArray(w.cheatDays)) w.cheatDays = [];
+            if (!Array.isArray(w.travelDays)) w.travelDays = [];
+            if (!Array.isArray(w.sickDays)) w.sickDays = [];
+            if (typeof w.jobApplications !== 'number') w.jobApplications = 0;
+            if (typeof w.reflectionWin !== 'string') w.reflectionWin = '';
+            if (typeof w.reflectionFocus !== 'string') w.reflectionFocus = '';
+            if (!w.records) w.records = {};
+
+            state.habits.forEach(h => {
+                if (!Array.isArray(w.records[h.id]) || w.records[h.id].length !== 7) {
+                    w.records[h.id] = [0, 0, 0, 0, 0, 0, 0];
+                } else {
+                    w.records[h.id] = w.records[h.id].map(v => v === true ? 1 : (v === false ? 0 : Number(v) || 0));
+                }
+            });
+        }
+
+        function loadState() {
+            const defaults = getDefaultData();
+            try {
+                const raw = localStorage.getItem(STORAGE_KEY);
+                if (raw) {
+                    const parsed = JSON.parse(raw);
+                    state.habitCategories = Array.isArray(parsed.habitCategories) && parsed.habitCategories.length ? parsed.habitCategories : defaults.habitCategories;
+                    state.taskGroups = Array.isArray(parsed.taskGroups) && parsed.taskGroups.length ? parsed.taskGroups : defaults.taskGroups;
+                    state.habits = Array.isArray(parsed.habits) && parsed.habits.length ? parsed.habits : defaults.habits;
+                    state.weeksData = parsed.weeksData || defaults.weeksData;
+                    state.pendingTasks = Array.isArray(parsed.pendingTasks) ? parsed.pendingTasks : defaults.pendingTasks;
+                    state.currentWeekMonday = parsed.currentWeekMonday || BASE_MONDAY_ISO;
+                    state.referenceDayIndex = typeof parsed.referenceDayIndex === 'number' ? parsed.referenceDayIndex : 1;
+                    ensureWeekInitialized(state.currentWeekMonday);
+                    document.getElementById('active-day-select').value = String(state.referenceDayIndex);
+                    return;
+                }
+            } catch (e) {
+                console.error(e);
+            }
+
+            state.habitCategories = defaults.habitCategories;
+            state.taskGroups = defaults.taskGroups;
+            state.habits = defaults.habits;
+            state.weeksData = defaults.weeksData;
+            state.pendingTasks = defaults.pendingTasks;
+            state.currentWeekMonday = BASE_MONDAY_ISO;
+            state.referenceDayIndex = 1;
+            ensureWeekInitialized(state.currentWeekMonday);
+            document.getElementById('active-day-select').value = '1';
+            saveState();
+        }
+
+        function saveState() {
+            try {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify({
+                    habitCategories: state.habitCategories,
+                    taskGroups: state.taskGroups,
+                    habits: state.habits,
+                    weeksData: state.weeksData,
+                    pendingTasks: state.pendingTasks,
+                    currentWeekMonday: state.currentWeekMonday,
+                    referenceDayIndex: state.referenceDayIndex
+                }));
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        function getCurrentWeekObject() {
+            ensureWeekInitialized(state.currentWeekMonday);
+            return state.weeksData[state.currentWeekMonday];
+        }
+
+        /* ==========================================================================
+           MÉTRICAS DE HÁBITOS Y ESCUDOS DE RACHA
+           ========================================================================== */
+        function isDayShielded(mondayIso, dayIdx) {
+            const w = state.weeksData[mondayIso];
+            if (!w) return false;
+            return (w.cheatDays || []).includes(dayIdx) ||
+                   (w.travelDays || []).includes(dayIdx) ||
+                   (w.sickDays || []).includes(dayIdx);
+        }
+
+        function calculateHabitMetrics(habitId, mondayIso, refDayIdx) {
+            ensureWeekInitialized(mondayIso);
+            const weekObj = state.weeksData[mondayIso];
+            const rec = weekObj.records[habitId] || [0, 0, 0, 0, 0, 0, 0];
+            const habit = state.habits.find(h => h.id === habitId);
+            const rawTarget = habit ? (habit.targetDays || 7) : 7;
+
+            const specialOffDays = (weekObj.travelDays || []).length + (weekObj.sickDays || []).length;
+            const adjustedTargetDays = rawTarget === 1 ? 1 : Math.max(1, rawTarget - Math.floor(specialOffDays / 2));
+
+            const pointsThisWeek = rec.reduce((acc, v) => acc + (Number(v) || 0), 0);
+            const activeDaysCount = rec.filter(v => v > 0).length;
+
+            const shieldBonus = rawTarget >= 5
+                ? [0,1,2,3,4,5,6].filter(d => rec[d] === 0 && isDayShielded(mondayIso, d)).length
+                : 0;
+
+            const effectivePoints = Math.min(7, pointsThisWeek + shieldBonus);
+            const weeklyPercent = Math.min(100, Math.round((effectivePoints / adjustedTargetDays) * 100));
+            const metGoal = pointsThisWeek >= adjustedTargetDays || effectivePoints >= adjustedTargetDays || specialOffDays >= 6;
+
+            let missedYesterdayAlert = false;
+            if (rawTarget >= 4 && refDayIdx > 0) {
+                const yestVal = rec[refDayIdx - 1];
+                const todayVal = rec[refDayIdx];
+                if (yestVal === 0 && !isDayShielded(mondayIso, refDayIdx - 1) && todayVal === 0) {
+                    missedYesterdayAlert = true;
+                }
+            }
+
+            const isWeeklyGoalMode = rawTarget < 7;
+            if (isWeeklyGoalMode) {
+                let consecutiveWeeks = 0;
+                let cursorW = mondayIso;
+                const checkWeekOk = (wIso) => {
+                    const wData = state.weeksData[wIso];
+                    if (!wData || !wData.records || !wData.records[habitId]) return false;
+                    const pts = wData.records[habitId].reduce((a, b) => a + (Number(b) || 0), 0);
+                    const off = (wData.travelDays || []).length + (wData.sickDays || []).length;
+                    const adjT = rawTarget === 1 ? 1 : Math.max(1, rawTarget - Math.floor(off / 2));
+                    return pts >= adjT || off >= 5;
+                };
+                if (!checkWeekOk(cursorW)) cursorW = addDaysToIso(cursorW, -7);
+                for (let s = 0; s < 26; s++) {
+                    if (checkWeekOk(cursorW)) { consecutiveWeeks++; cursorW = addDaysToIso(cursorW, -7); }
+                    else break;
+                }
+                return {
+                    isWeeklyGoalMode: true,
+                    targetDays: rawTarget,
+                    adjustedTargetDays,
+                    currentStreak: consecutiveWeeks,
+                    maxStreak: Math.max(consecutiveWeeks, 2),
+                    streakUnitShort: 'sem',
+                    streakUnitFull: consecutiveWeeks === 1 ? 'semana' : 'semanas',
+                    comparableStreakDays: consecutiveWeeks * 7,
+                    comparableMaxDays: Math.max(consecutiveWeeks, 2) * 7,
+                    pointsThisWeek,
+                    activeDaysCount,
+                    weeklyPercent,
+                    metGoal,
+                    missedYesterdayAlert
+                };
+            }
+
+            let currentStreak = 0;
+            let cMon = mondayIso;
+            let cDay = refDayIdx;
+            if ((rec[cDay] || 0) === 0 && !isDayShielded(cMon, cDay)) {
+                if (cDay > 0) cDay--;
+                else { cMon = addDaysToIso(cMon, -7); cDay = 6; }
+            }
+            for (let step = 0; step < 50; step++) {
+                const wData = state.weeksData[cMon];
+                if (!wData || !wData.records || !wData.records[habitId]) break;
+                const val = Number(wData.records[habitId][cDay]) || 0;
+                const sh = isDayShielded(cMon, cDay);
+                if (val > 0) currentStreak++;
+                else if (sh && currentStreak > 0) currentStreak++;
+                else break;
+
+                if (cDay > 0) cDay--;
+                else { cMon = addDaysToIso(cMon, -7); cDay = 6; }
+            }
+
+            return {
+                isWeeklyGoalMode: false,
+                targetDays: rawTarget,
+                adjustedTargetDays,
+                currentStreak,
+                maxStreak: Math.max(currentStreak, 7),
+                streakUnitShort: 'd',
+                streakUnitFull: currentStreak === 1 ? 'día' : 'días',
+                comparableStreakDays: currentStreak,
+                comparableMaxDays: Math.max(currentStreak, 7),
+                pointsThisWeek,
+                activeDaysCount,
+                weeklyPercent,
+                metGoal,
+                missedYesterdayAlert
+            };
+        }
+
+        function getWeeklySummaryStats(mondayIso) {
+            ensureWeekInitialized(mondayIso);
+            if (state.habits.length === 0) return { weeklyRate: 0, totalCompletedChecks: 0, totalTargetChecks: 0 };
+            let done = 0, target = 0;
+            state.habits.forEach(h => {
+                const m = calculateHabitMetrics(h.id, mondayIso, state.referenceDayIndex);
+                done += Math.min(m.adjustedTargetDays, m.pointsThisWeek);
+                target += m.adjustedTargetDays;
+            });
+            const rate = target > 0 ? Math.min(100, Math.round((done / target) * 100)) : 0;
+            return { weeklyRate: rate, totalCompletedChecks: Number(done.toFixed(1)), totalTargetChecks: target };
+        }
+
+        /* ==========================================================================
+           RENDERIZADO INTEGRAL DE LA INTERFAZ
+           ========================================================================== */
+        function renderAll() {
+            ensureWeekInitialized(state.currentWeekMonday);
+            renderWeekHeaderBar();
+            renderCategoryDropdowns();
+            renderKPIs();
+            renderMatrixHeader();
+            renderMatrixBody();
+            renderDailyChart();
+            renderStreaksChart();
+            renderWeeklyReflection();
+            renderPendingTasksSection();
+            lucide.createIcons();
+        }
+
+        function renderWeekHeaderBar() {
+            document.getElementById('week-range-label').textContent = formatWeekRangeLabel(state.currentWeekMonday);
+            const badge = document.getElementById('week-status-badge');
+            const btnToday = document.getElementById('btn-go-today');
+
+            if (state.currentWeekMonday === BASE_MONDAY_ISO) {
+                badge.textContent = 'Semana Actual';
+                badge.className = 'inline-block text-[10px] font-semibold uppercase tracking-wider px-2 py-0.2 rounded-full bg-teal-500/10 text-teal-700 dark:text-teal-300';
+                btnToday.classList.add('hidden');
+            } else if (state.currentWeekMonday < BASE_MONDAY_ISO) {
+                badge.textContent = 'Historial Guardado';
+                badge.className = 'inline-block text-[10px] font-semibold uppercase tracking-wider px-2 py-0.2 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-300';
+                btnToday.classList.remove('hidden');
+            } else {
+                badge.textContent = 'Semana Futura';
+                badge.className = 'inline-block text-[10px] font-semibold uppercase tracking-wider px-2 py-0.2 rounded-full bg-sky-500/10 text-sky-600 dark:text-sky-300';
+                btnToday.classList.remove('hidden');
+            }
+        }
+
+        function renderCategoryDropdowns() {
+            const catFilter = document.getElementById('category-filter');
+            const currentVal = state.categoryFilter;
+            catFilter.innerHTML = `<option value="TODOS">Todas las categorías</option>` +
+                state.habitCategories.map(c => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join('');
+            catFilter.value = state.habitCategories.includes(currentVal) ? currentVal : 'TODOS';
+
+            const habitCatInput = document.getElementById('habit-category-input');
+            if (habitCatInput) {
+                habitCatInput.innerHTML = state.habitCategories.map(c => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join('');
+            }
+
+            const taskTagSelect = document.getElementById('new-task-tag');
+            const editTaskTagSelect = document.getElementById('edit-task-tag');
+            const groupOptionsHtml = state.taskGroups.map(g => `<option value="${escapeHtml(g)}">${escapeHtml(g)}</option>`).join('');
+            if (taskTagSelect) taskTagSelect.innerHTML = groupOptionsHtml;
+            if (editTaskTagSelect) editTaskTagSelect.innerHTML = groupOptionsHtml;
+        }
+
+        function renderKPIs() {
+            const weekStats = getWeeklySummaryStats(state.currentWeekMonday);
+            const weekObj = getCurrentWeekObject();
+
+            document.getElementById('kpi-weekly-rate').textContent = `${weekStats.weeklyRate}%`;
+            document.getElementById('kpi-weekly-fraction').textContent = `${weekStats.totalCompletedChecks}/${weekStats.totalTargetChecks} metas`;
+            document.getElementById('kpi-weekly-bar').style.width = `${weekStats.weeklyRate}%`;
+
+            let bestName = 'Sin racha activa', bestText = '0 días', bestScore = -1;
+            state.habits.forEach(h => {
+                const m = calculateHabitMetrics(h.id, state.currentWeekMonday, state.referenceDayIndex);
+                if (m.comparableStreakDays > bestScore && m.currentStreak > 0) {
+                    bestScore = m.comparableStreakDays;
+                    bestName = `${h.emoji} ${h.name}`;
+                    bestText = `${m.currentStreak} ${m.streakUnitFull}`;
+                }
+            });
+            document.getElementById('kpi-best-streak').textContent = bestText;
+            document.getElementById('kpi-best-streak-habit').textContent = bestName;
+
+            const tCount = (weekObj.travelDays || []).length;
+            const cCount = (weekObj.cheatDays || []).length;
+            const sCount = (weekObj.sickDays || []).length;
+            const totalShields = tCount + cCount + sCount;
+            document.getElementById('kpi-shields-status').textContent = `${totalShields} día(s) protegidos`;
+            const parts = [];
+            if (tCount) parts.push(`✈️ ${tCount} viaje`);
+            if (cCount) parts.push(`🍕 ${cCount} libre`);
+            if (sCount) parts.push(`🤒 ${sCount} salud`);
+            document.getElementById('kpi-shields-desc').textContent = parts.length ? parts.join(' • ') : 'Actívalos bajo cada día si los necesitas.';
+
+            document.getElementById('kpi-job-count').textContent = String(weekObj.jobApplications || 0);
+
+            const focusBox = document.getElementById('top-focus-tasks-box');
+            const pinnedTasks = state.pendingTasks.filter(t => t.pinned && !t.done).slice(0, 3);
+            if (pinnedTasks.length === 0) {
+                focusBox.innerHTML = `<p class="text-xs text-slate-400 italic">No hay tareas fijadas hoy. Haz clic en 📌 en cualquier tarea de abajo para destacarla aquí.</p>`;
+            } else {
+                focusBox.innerHTML = pinnedTasks.map(t => `
+                    <div class="flex items-center justify-between gap-2 bg-slate-50 dark:bg-slate-800/75 px-2.5 py-1.5 rounded-xl border border-slate-200/80 dark:border-slate-700/70 text-xs">
+                        <label class="flex items-center gap-2 cursor-pointer truncate">
+                            <input type="checkbox" onchange="togglePendingTask('${t.id}')" class="w-3.5 h-3.5 rounded accent-teal-600 cursor-pointer">
+                            <span class="font-medium text-slate-700 dark:text-slate-200 truncate">${escapeHtml(t.title)}</span>
+                        </label>
+                        <span class="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-slate-200/70 dark:bg-slate-700 text-slate-600 dark:text-slate-300 shrink-0">${escapeHtml(t.tag)}</span>
+                    </div>
+                `).join('');
+            }
+        }
+
+        function changeJobApplications(delta) {
+            const weekObj = getCurrentWeekObject();
+            weekObj.jobApplications = Math.max(0, (weekObj.jobApplications || 0) + delta);
+            if (delta > 0) {
+                const jobHabit = state.habits.find(h => h.id === 'hab-trabajo');
+                if (jobHabit && weekObj.records[jobHabit.id]) {
+                    weekObj.records[jobHabit.id][state.referenceDayIndex] = 1;
+                }
+                showToast(`💼 Postulación registrada (${weekObj.jobApplications} esta semana)`, 'briefcase');
+            }
+            saveState();
+            renderAll();
+        }
+
+        /* ==========================================================================
+           MATRIZ SEMANAL: CABECERA CON 3 ESCUDOS Y FILAS CON COLORES MATE SUAVES
+           ========================================================================== */
+        function renderMatrixHeader() {
+            const headerRow = document.getElementById('matrix-header-row');
+            const dates = getWeekDatesArray(state.currentWeekMonday);
+            const weekObj = getCurrentWeekObject();
+
+            let html = `<th class="py-3 pl-6 pr-3 w-[310px]">Hábito / Actividad Semanal</th>`;
+
+            dates.forEach((d, idx) => {
+                const isToday = idx === state.referenceDayIndex;
+                const isCheat = weekObj.cheatDays.includes(idx);
+                const isTravel = weekObj.travelDays.includes(idx);
+                const isSick = weekObj.sickDays.includes(idx);
+                const colClass = isTravel ? 'travel-day-col' : isSick ? 'sick-day-col' : isCheat ? 'cheat-day-col' : '';
+
+                html += `
+                    <th class="py-2.5 px-1 text-center ${colClass}">
+                        <div class="flex flex-col items-center gap-1">
+                            <button onclick="changeReferenceDay(${idx})"
+                                class="mx-auto flex flex-col items-center justify-center px-2.5 py-1 rounded-xl transition-all ${
+                                    isToday
+                                        ? 'bg-teal-600/90 text-white shadow-sm'
+                                        : 'hover:bg-slate-200/70 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300'
+                                }">
+                                <span class="text-[10px] font-bold uppercase">${d.shortName}</span>
+                                <span class="text-xs font-extrabold">${d.dayNumber}</span>
+                            </button>
+
+                            <div class="flex items-center justify-center gap-0.5">
+                                <button onclick="toggleDayShield('cheat', ${idx})" title="🍕 Cheat Day / Descanso"
+                                    class="px-1 py-0.5 rounded text-[10px] transition ${isCheat ? 'bg-amber-500/25 text-amber-300 border border-amber-400/40' : 'bg-slate-100 dark:bg-slate-800/80 text-slate-400 opacity-60 hover:opacity-100'}">🍕</button>
+                                <button onclick="toggleDayShield('travel', ${idx})" title="✈️ Día de Viaje (Ajusta metas y congela racha)"
+                                    class="px-1 py-0.5 rounded text-[10px] transition ${isTravel ? 'bg-sky-500/25 text-sky-300 border border-sky-400/40' : 'bg-slate-100 dark:bg-slate-800/80 text-slate-400 opacity-60 hover:opacity-100'}">✈️</button>
+                                <button onclick="toggleDayShield('sick', ${idx})" title="🤒 Día de Salud / Imprevisto (Protege tu racha)"
+                                    class="px-1 py-0.5 rounded text-[10px] transition ${isSick ? 'bg-purple-500/25 text-purple-300 border border-purple-400/40' : 'bg-slate-100 dark:bg-slate-800/80 text-slate-400 opacity-60 hover:opacity-100'}">🤒</button>
+                            </div>
+                        </div>
+                    </th>
+                `;
+            });
+
+            html += `
+                <th class="py-3 px-3 text-center">Racha</th>
+                <th class="py-3 px-4 text-center">Progreso Sem.</th>
+                <th class="py-3 pr-6 pl-2 text-right">Editar</th>
+            `;
+            headerRow.innerHTML = html;
+        }
+
+        function toggleDayShield(type, dayIdx) {
+            const weekObj = getCurrentWeekObject();
+            const mapKey = type === 'cheat' ? 'cheatDays' : type === 'travel' ? 'travelDays' : 'sickDays';
+            const arr = weekObj[mapKey];
+            const pos = arr.indexOf(dayIdx);
+            const dayName = DAYS_OF_WEEK[dayIdx].full;
+
+            if (pos !== -1) {
+                arr.splice(pos, 1);
+                showToast(`Día especial desactivado el ${dayName}`, 'shield-off');
+            } else {
+                ['cheatDays', 'travelDays', 'sickDays'].forEach(k => {
+                    const p = weekObj[k].indexOf(dayIdx);
+                    if (p !== -1) weekObj[k].splice(p, 1);
+                });
+                arr.push(dayIdx);
+                const label = type === 'cheat' ? '🍕 Cheat Day' : type === 'travel' ? '✈️ Día de Viaje' : '🤒 Día de Salud / Imprevisto';
+                showToast(`${label} activado el ${dayName}. ¡Tu racha está protegida!`, 'shield-check');
+            }
+            saveState();
+            renderAll();
+        }
+
+        function renderMatrixBody() {
+            const tbody = document.getElementById('habits-matrix-body');
+            const weekObj = getCurrentWeekObject();
+
+            const filtered = state.habits.filter(h =>
+                state.categoryFilter === 'TODOS' ? true : h.category === state.categoryFilter
+            );
+
+            document.getElementById('total-habits-badge').textContent = `${filtered.length} hábitos`;
+
+            tbody.innerHTML = filtered.map(habit => {
+                const palette = COLOR_PALETTE[habit.color] || COLOR_PALETTE.emerald;
+                const rec = weekObj.records[habit.id] || [0, 0, 0, 0, 0, 0, 0];
+                const metrics = calculateHabitMetrics(habit.id, state.currentWeekMonday, state.referenceDayIndex);
+                const prefDay = typeof habit.preferredDay === 'number' ? habit.preferredDay : -1;
+
+                const cellsHtml = rec.map((val, dayIdx) => {
+                    const numVal = Number(val) || 0;
+                    const isCheat = weekObj.cheatDays.includes(dayIdx);
+                    const isTravel = weekObj.travelDays.includes(dayIdx);
+                    const isSick = weekObj.sickDays.includes(dayIdx);
+                    const isPref = prefDay === dayIdx;
+                    const colBg = isTravel ? 'travel-day-col' : isSick ? 'sick-day-col' : isCheat ? 'cheat-day-col' : '';
+
+                    let btnStyle = '';
+                    let innerHtml = '';
+                    let titleTxt = '';
+
+                    if (numVal === 1) {
+                        btnStyle = `${palette.bgCheck} shadow-sm animate-check`;
+                        innerHtml = '<i data-lucide="check" class="w-4 h-4 stroke-[2.5]"></i>';
+                        titleTxt = '100% Cumplido (Clic de nuevo para cambiar a ⚡ Parcial / Mínimo Viable)';
+                    } else if (numVal === 0.5) {
+                        btnStyle = 'bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 font-bold shadow-sm animate-check border border-amber-400/40';
+                        innerHtml = '<span class="text-xs">⚡</span>';
+                        titleTxt = '⚡ Cumplimiento Mínimo Viable (50% puntos, mantiene tu racha intacta). Clic para vaciar.';
+                    } else if (isTravel) {
+                        btnStyle = 'bg-sky-500/10 text-sky-300/90 border border-sky-500/25';
+                        innerHtml = '<span class="text-xs">✈️</span>';
+                        titleTxt = 'Día de Viaje ✈️ (Racha protegida)';
+                    } else if (isSick) {
+                        btnStyle = 'bg-purple-500/10 text-purple-300/90 border border-purple-500/25';
+                        innerHtml = '<span class="text-xs">🤒</span>';
+                        titleTxt = 'Día de Salud / Imprevisto 🤒 (Racha protegida)';
+                    } else if (metrics.metGoal) {
+                        btnStyle = 'bg-teal-500/[0.07] text-teal-500/60 border border-dashed border-teal-500/30';
+                        innerHtml = '<span class="text-[10px] font-bold">✓</span>';
+                        titleTxt = '¡Meta semanal ya alcanzada!';
+                    } else if (isCheat && habit.targetDays >= 5) {
+                        btnStyle = 'bg-amber-500/10 text-amber-300/90 border border-amber-500/25';
+                        innerHtml = '<span class="text-xs">🍕</span>';
+                        titleTxt = 'Protegido por Cheat Day 🍕';
+                    } else if (isPref) {
+                        btnStyle = 'bg-slate-200/50 dark:bg-slate-800/70 text-slate-400 border border-dashed border-slate-400/40';
+                        innerHtml = '<span class="text-[10px] font-bold">★</span>';
+                        titleTxt = `Día sugerido (${DAYS_OF_WEEK[dayIdx].full})`;
+                    } else {
+                        btnStyle = 'bg-slate-100/90 dark:bg-slate-800/65 hover:bg-slate-200/80 dark:hover:bg-slate-700/70 text-transparent border border-slate-200/70 dark:border-slate-700/60';
+                        innerHtml = '<i data-lucide="check" class="w-4 h-4 opacity-0"></i>';
+                        titleTxt = '1 clic = ✓ 100% | 2 clics = ⚡ Parcial';
+                    }
+
+                    return `
+                        <td class="py-3 px-1.5 text-center ${colBg}">
+                            <button onclick="cycleHabitDayValue('${habit.id}', ${dayIdx})"
+                                title="${titleTxt}"
+                                class="w-9 h-9 rounded-xl mx-auto flex items-center justify-center transition-all ${btnStyle}">
+                                ${innerHtml}
+                            </button>
+                        </td>
+                    `;
+                }).join('');
+
+                const alertNeverMissTwice = metrics.missedYesterdayAlert
+                    ? `<span class="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-rose-500/10 text-rose-400 border border-rose-500/25" title="Regla de Oro: Ayer no se registró. ¡Haz aunque sea la versión mínima (⚡) hoy para no fallar 2 días seguidos!">
+                         ⚠️ No fallar 2 días
+                       </span>`
+                    : '';
+
+                return `
+                    <tr class="group hover:bg-slate-50/70 dark:hover:bg-slate-800/30 transition-colors">
+                        <td class="py-3 pl-6 pr-3">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-xl ${palette.badge} border flex items-center justify-center text-lg shrink-0">
+                                    ${habit.emoji}
+                                </div>
+                                <div class="min-w-0">
+                                    <p class="font-semibold text-slate-800 dark:text-slate-100 truncate max-w-[230px]">
+                                        ${escapeHtml(habit.name)}
+                                    </p>
+                                    <div class="flex flex-wrap items-center gap-1.5 mt-0.5">
+                                        <span class="text-[11px] text-slate-400">${escapeHtml(habit.category)}</span>
+                                        <span class="text-[11px] font-semibold text-slate-500 dark:text-slate-400">• 🎯 ${habit.targetDays}d/sem</span>
+                                        ${alertNeverMissTwice}
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                        ${cellsHtml}
+                        <td class="py-3 px-3 text-center">
+                            <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold ${
+                                metrics.currentStreak >= 2 ? 'bg-amber-500/10 text-amber-600 dark:text-amber-300/90 border border-amber-500/20' : 'bg-slate-100 dark:bg-slate-800/80 text-slate-400'
+                            }">
+                                🔥 ${metrics.currentStreak} ${metrics.streakUnitShort}
+                            </span>
+                        </td>
+                        <td class="py-3 px-4">
+                            <div class="w-28 mx-auto">
+                                <div class="flex justify-between text-[11px] font-semibold mb-1">
+                                    <span class="${metrics.metGoal ? 'text-teal-600 dark:text-teal-400' : 'text-slate-400'}">${metrics.pointsThisWeek}/${metrics.adjustedTargetDays}</span>
+                                    <span class="${metrics.metGoal ? 'text-teal-600 dark:text-teal-400' : 'text-slate-400'}">${metrics.weeklyPercent}%</span>
+                                </div>
+                                <div class="w-full h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                                    <div class="h-full rounded-full bg-gradient-to-r ${palette.bar}" style="width: ${metrics.weeklyPercent}%"></div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="py-3 pr-6 pl-2 text-right">
+                            <div class="inline-flex items-center gap-1">
+                                <button onclick="openHabitModal('${habit.id}')" class="p-1.5 rounded-lg text-slate-400 hover:text-slate-200 hover:bg-slate-800/60"><i data-lucide="pencil" class="w-4 h-4"></i></button>
+                                <button onclick="deleteHabitDirectly('${habit.id}')" class="p-1.5 rounded-lg text-slate-400 hover:text-rose-400 hover:bg-rose-500/10"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function cycleHabitDayValue(habitId, dayIdx) {
+            const weekObj = getCurrentWeekObject();
+            const currentVal = Number(weekObj.records[habitId][dayIdx]) || 0;
+            let nextVal = 0;
+            if (currentVal === 0) nextVal = 1;
+            else if (currentVal === 1) nextVal = 0.5;
+            else nextVal = 0;
+
+            weekObj.records[habitId][dayIdx] = nextVal;
+            saveState();
+            renderAll();
+
+            if (nextVal === 1) {
+                showToast('✓ ¡Hábito cumplido al 100%!', 'check-circle-2');
+            } else if (nextVal === 0.5) {
+                showToast('⚡ Versión Mínima Viable registrada (Racha protegida)', 'zap');
+            }
+        }
+
+        /* ==========================================================================
+           GRÁFICOS Y BITÁCORA DE REFLEXIÓN SEMANAL
+           ========================================================================== */
+        function setChartMode(mode) {
+            state.chartMode = mode;
+            document.getElementById('btn-chart-bars').className = mode === 'bars'
+                ? 'px-2.5 py-1 rounded-lg text-xs font-semibold bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 shadow-sm'
+                : 'px-2.5 py-1 rounded-lg text-xs font-semibold text-slate-500';
+            document.getElementById('btn-chart-weeks').className = mode === 'weeks'
+                ? 'px-2.5 py-1 rounded-lg text-xs font-semibold bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 shadow-sm'
+                : 'px-2.5 py-1 rounded-lg text-xs font-semibold text-slate-500';
+            renderDailyChart();
+        }
+
+        function renderDailyChart() {
+            const container = document.getElementById('daily-chart-container');
+            const totalHabits = state.habits.length || 1;
+            const weekObj = getCurrentWeekObject();
+            const dates = getWeekDatesArray(state.currentWeekMonday);
+
+            if (state.chartMode === 'weeks') {
+                const weeksList = [
+                    addDaysToIso(state.currentWeekMonday, -21),
+                    addDaysToIso(state.currentWeekMonday, -14),
+                    addDaysToIso(state.currentWeekMonday, -7),
+                    state.currentWeekMonday
+                ];
+                container.innerHTML = `<div class="flex items-end justify-around gap-3 h-full pt-4 px-2">` +
+                    weeksList.map(wIso => {
+                        const st = getWeeklySummaryStats(wIso);
+                        const dArr = getWeekDatesArray(wIso);
+                        const lbl = `${dArr[0].dayNumber} ${dArr[0].monthShort}`;
+                        const isCur = wIso === state.currentWeekMonday;
+                        return `
+                            <div onclick="jumpToWeek('${wIso}')" class="flex-1 flex flex-col items-center h-full justify-end cursor-pointer">
+                                <span class="text-xs font-bold ${isCur ? 'text-teal-500' : 'text-slate-400'} mb-1">${st.weeklyRate}%</span>
+                                <div class="w-full max-w-[54px] h-32 bg-slate-100 dark:bg-slate-800/80 rounded-xl p-1 flex items-end">
+                                    <div class="w-full rounded-lg bg-gradient-to-t ${isCur ? 'from-teal-600/90 to-emerald-500/75' : 'from-slate-600 to-slate-500'}" style="height:${Math.max(st.weeklyRate, 8)}%"></div>
+                                </div>
+                                <span class="text-[11px] font-semibold mt-1.5 ${isCur ? 'text-teal-500' : 'text-slate-400'}">${lbl}</span>
+                            </div>
+                        `;
+                    }).join('') + `</div>`;
+                return;
+            }
+
+            const dayPoints = [0, 0, 0, 0, 0, 0, 0];
+            state.habits.forEach(h => {
+                const r = weekObj.records[h.id] || [];
+                r.forEach((v, i) => { dayPoints[i] += Number(v) || 0; });
+            });
+
+            const avg = (dayPoints.reduce((a, b) => a + b, 0) / 7).toFixed(1);
+            document.getElementById('chart-summary-caption').textContent = `Promedio: ${avg} pts/día`;
+
+            container.innerHTML = `<div class="flex items-end justify-between gap-2 h-full pt-4 px-1">` +
+                dates.map((d, idx) => {
+                    const pts = dayPoints[idx];
+                    const pct = Math.min(100, Math.round((pts / totalHabits) * 100));
+                    const isTravel = weekObj.travelDays.includes(idx);
+                    const isSick = weekObj.sickDays.includes(idx);
+                    const isCheat = weekObj.cheatDays.includes(idx);
+                    const barColor = isTravel
+                        ? 'from-sky-600/80 to-sky-400/70'
+                        : isSick
+                        ? 'from-purple-600/75 to-purple-400/65'
+                        : isCheat
+                        ? 'from-amber-600/80 to-amber-400/70'
+                        : 'from-teal-600/85 to-emerald-500/75';
+                    const icon = isTravel ? '✈️' : isSick ? '🤒' : isCheat ? '🍕' : '';
+
+                    return `
+                        <div onclick="changeReferenceDay(${idx})" class="flex-1 flex flex-col items-center h-full justify-end cursor-pointer">
+                            <span class="text-[10px] font-semibold text-slate-400 mb-1">${icon}${pct}%</span>
+                            <div class="w-full max-w-[36px] h-32 bg-slate-100 dark:bg-slate-800/80 rounded-xl p-1 flex items-end">
+                                <div class="w-full rounded-lg bg-gradient-to-t ${barColor} transition-all duration-500" style="height:${Math.max(pct, 8)}%"></div>
+                            </div>
+                            <span class="text-[11px] font-semibold mt-1.5 ${idx === state.referenceDayIndex ? 'text-teal-500' : 'text-slate-400'}">${d.shortName}</span>
+                        </div>
+                    `;
+                }).join('') + `</div>`;
+        }
+
+        function renderStreaksChart() {
+            const container = document.getElementById('streaks-chart-container');
+            const ranked = [...state.habits].map(h => ({
+                ...h,
+                ...calculateHabitMetrics(h.id, state.currentWeekMonday, state.referenceDayIndex)
+            })).sort((a, b) => b.comparableStreakDays - a.comparableStreakDays);
+
+            container.innerHTML = ranked.map(item => {
+                const palette = COLOR_PALETTE[item.color] || COLOR_PALETTE.emerald;
+                return `
+                    <div class="space-y-1">
+                        <div class="flex items-center justify-between text-xs">
+                            <span class="font-medium text-slate-700 dark:text-slate-200 truncate pr-2">${item.emoji} ${escapeHtml(item.name)}</span>
+                            <span class="font-semibold text-amber-600/90 dark:text-amber-300/90 shrink-0">🔥 ${item.currentStreak} ${item.streakUnitFull}</span>
+                        </div>
+                        <div class="w-full h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                            <div class="h-full bg-gradient-to-r ${palette.bar} rounded-full" style="width:${Math.max(item.weeklyPercent, 8)}%"></div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function renderWeeklyReflection() {
+            const weekObj = getCurrentWeekObject();
+            document.getElementById('weekly-win-input').value = weekObj.reflectionWin || '';
+            document.getElementById('weekly-focus-input').value = weekObj.reflectionFocus || '';
+        }
+
+        function saveWeeklyReflection() {
+            const weekObj = getCurrentWeekObject();
+            weekObj.reflectionWin = document.getElementById('weekly-win-input').value;
+            weekObj.reflectionFocus = document.getElementById('weekly-focus-input').value;
+            saveState();
+        }
+
+        /* ==========================================================================
+           SECCIÓN DE TAREAS PENDIENTES
+           ========================================================================== */
+        function renderPendingTasksSection() {
+            const filterBar = document.getElementById('task-filter-buttons');
+            const filters = ['TODAS', 'PENDIENTES', ...state.taskGroups];
+
+            filterBar.innerHTML = filters.map(f => {
+                const active = state.taskFilter === f;
+                const label = f === 'TODAS' ? 'Todas' : f === 'PENDIENTES' ? 'Por hacer' : f;
+                return `
+                    <button type="button" onclick="setTaskFilter('${escapeHtml(f)}')"
+                        class="px-3 py-1.5 rounded-xl text-xs font-semibold transition ${
+                            active
+                                ? 'bg-teal-600 text-white shadow-sm'
+                                : 'bg-slate-100 dark:bg-slate-800/80 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
+                        }">
+                        ${escapeHtml(label)}
+                    </button>
+                `;
+            }).join('') + `
+                <button type="button" onclick="clearCompletedTasks()" class="px-2.5 py-1.5 rounded-xl text-xs font-semibold text-rose-400 hover:bg-rose-500/10">
+                    Limpiar hechas
+                </button>
+            `;
+
+            const container = document.getElementById('pending-tasks-container');
+            const filtered = state.pendingTasks.filter(t => {
+                if (state.taskFilter === 'TODAS') return true;
+                if (state.taskFilter === 'PENDIENTES') return !t.done;
+                return t.tag === state.taskFilter;
+            });
+
+            if (filtered.length === 0) {
+                container.innerHTML = `<div class="md:col-span-2 py-8 text-center text-xs text-slate-400 border border-dashed border-slate-300 dark:border-slate-800 rounded-2xl">No hay tareas pendientes en este filtro.</div>`;
+                return;
+            }
+
+            const prioStyles = {
+                alta: 'bg-rose-500/10 text-rose-400 border-rose-500/20',
+                media: 'bg-amber-500/10 text-amber-400/90 border-amber-500/20',
+                baja: 'bg-teal-500/10 text-teal-400 border-teal-500/20'
+            };
+
+            container.innerHTML = filtered.map(task => {
+                const hasNotes = task.notes && task.notes.trim().length > 0;
+                const hasDue = task.dueDate && task.dueDate.trim().length > 0;
+
+                return `
+                    <div class="p-4 rounded-2xl border transition-all flex flex-col justify-between gap-2 ${
+                        task.done
+                            ? 'bg-slate-50/50 dark:bg-slate-900/40 border-slate-200/50 dark:border-slate-800/50 opacity-55'
+                            : task.pinned
+                            ? 'bg-teal-500/[0.03] dark:bg-teal-500/[0.05] border-teal-500/30 shadow-sm'
+                            : 'bg-white dark:bg-slate-800/45 border-slate-200/80 dark:border-slate-700/60'
+                    }">
+                        <div class="flex items-start justify-between gap-2">
+                            <label class="flex items-start gap-3 cursor-pointer flex-1">
+                                <input type="checkbox" ${task.done ? 'checked' : ''} onchange="togglePendingTask('${task.id}')"
+                                    class="mt-1 w-4 h-4 rounded accent-teal-600 cursor-pointer shrink-0">
+                                <div class="min-w-0 flex-1">
+                                    <p class="text-sm font-semibold ${task.done ? 'line-through text-slate-400' : 'text-slate-800 dark:text-slate-100'}">
+                                        ${escapeHtml(task.title)}
+                                    </p>
+                                    ${hasNotes ? `<p class="text-xs text-slate-500 dark:text-slate-300 mt-1 bg-slate-100/70 dark:bg-slate-900/60 p-2 rounded-xl border border-slate-200/50 dark:border-slate-700/50 break-words">📝 ${escapeHtml(task.notes)}</p>` : ''}
+                                    <div class="flex flex-wrap items-center gap-1.5 mt-2">
+                                        <span class="text-[10px] font-semibold px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-700/80 text-slate-600 dark:text-slate-300">
+                                            ${escapeHtml(task.tag)}
+                                        </span>
+                                        <span class="text-[10px] font-semibold uppercase px-2 py-0.5 rounded-md border ${prioStyles[task.priority] || prioStyles.media}">
+                                            ${escapeHtml(task.priority)}
+                                        </span>
+                                        ${hasDue ? `<span class="text-[10px] font-medium px-2 py-0.5 rounded-md bg-sky-500/10 text-sky-400/90 border border-sky-500/20">📅 Vence: ${escapeHtml(task.dueDate)}</span>` : ''}
+                                    </div>
+                                </div>
+                            </label>
+
+                            <div class="flex items-center gap-1 shrink-0">
+                                <button onclick="togglePinTask('${task.id}')" title="${task.pinned ? 'Quitar de Foco de Hoy' : 'Fijar en Top 3 Foco de Hoy'}"
+                                    class="p-1.5 rounded-lg text-xs transition ${task.pinned ? 'bg-teal-600/25 text-teal-300 border border-teal-500/35' : 'text-slate-400 hover:bg-slate-800/60'}">
+                                    📌
+                                </button>
+                                <button onclick="openEditTaskModal('${task.id}')" title="Editar título, grupo o notas"
+                                    class="p-1.5 rounded-lg text-slate-400 hover:text-slate-200 hover:bg-slate-800/60">
+                                    <i data-lucide="pencil" class="w-4 h-4"></i>
+                                </button>
+                                <button onclick="deletePendingTask('${task.id}')" title="Eliminar tarea"
+                                    class="p-1.5 rounded-lg text-slate-400 hover:text-rose-400 hover:bg-rose-500/10">
+                                    <i data-lucide="trash-2" class="w-4 h-4"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function setTaskFilter(f) {
+            state.taskFilter = f;
+            renderPendingTasksSection();
+            lucide.createIcons();
+        }
+
+        function addPendingTask(e) {
+            e.preventDefault();
+            const title = document.getElementById('new-task-title').value.trim();
+            const notes = document.getElementById('new-task-notes').value.trim();
+            const tag = document.getElementById('new-task-tag').value;
+            const priority = document.getElementById('new-task-priority').value;
+            const dueDate = document.getElementById('new-task-due').value;
+            if (!title) return;
+
+            state.pendingTasks.unshift({
+                id: 'task-' + Date.now(),
+                title,
+                notes,
+                tag,
+                priority,
+                dueDate,
+                pinned: false,
+                done: false
+            });
+
+            document.getElementById('new-task-title').value = '';
+            document.getElementById('new-task-notes').value = '';
+            document.getElementById('new-task-due').value = '';
+            saveState();
+            renderAll();
+            showToast('📌 Nueva tarea pendiente agregada', 'plus-circle');
+        }
+
+        function togglePendingTask(id) {
+            const t = state.pendingTasks.find(x => x.id === id);
+            if (!t) return;
+            t.done = !t.done;
+            saveState();
+            renderAll();
+            if (t.done) showToast(`✅ Tarea completada: "${t.title}"`, 'check-circle-2');
+        }
+
+        function togglePinTask(id) {
+            const t = state.pendingTasks.find(x => x.id === id);
+            if (!t) return;
+            t.pinned = !t.pinned;
+            saveState();
+            renderAll();
+            showToast(t.pinned ? '📌 Tarea fijada en tu Foco de Hoy (arriba)' : 'Tarea quitada del Foco de Hoy', 'pin');
+        }
+
+        function deletePendingTask(id) {
+            state.pendingTasks = state.pendingTasks.filter(x => x.id !== id);
+            saveState();
+            renderAll();
+        }
+
+        function clearCompletedTasks() {
+            state.pendingTasks = state.pendingTasks.filter(x => !x.done);
+            saveState();
+            renderAll();
+            showToast('Tareas completadas limpiadas', 'sparkles');
+        }
+
+        function openEditTaskModal(id) {
+            const t = state.pendingTasks.find(x => x.id === id);
+            if (!t) return;
+            renderCategoryDropdowns();
+            document.getElementById('edit-task-id').value = t.id;
+            document.getElementById('edit-task-title').value = t.title;
+            document.getElementById('edit-task-tag').value = t.tag;
+            document.getElementById('edit-task-priority').value = t.priority;
+            document.getElementById('edit-task-due').value = t.dueDate || '';
+            document.getElementById('edit-task-notes').value = t.notes || '';
+
+            const modal = document.getElementById('edit-task-modal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function closeEditTaskModal() {
+            const modal = document.getElementById('edit-task-modal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        function saveEditedTask(e) {
+            e.preventDefault();
+            const id = document.getElementById('edit-task-id').value;
+            const t = state.pendingTasks.find(x => x.id === id);
+            if (!t) return;
+            t.title = document.getElementById('edit-task-title').value.trim();
+            t.tag = document.getElementById('edit-task-tag').value;
+            t.priority = document.getElementById('edit-task-priority').value;
+            t.dueDate = document.getElementById('edit-task-due').value;
+            t.notes = document.getElementById('edit-task-notes').value.trim();
+
+            saveState();
+            closeEditTaskModal();
+            renderAll();
+            showToast('✏️ Tarea actualizada correctamente', 'check');
+        }
+
+        /* ==========================================================================
+           GESTOR DE GRUPOS DE TAREAS Y CATEGORÍAS DE HÁBITOS
+           ========================================================================== */
+        function openCategoriesModal() {
+            renderCategoriesManagerLists();
+            const modal = document.getElementById('categories-modal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            lucide.createIcons();
+        }
+
+        function closeCategoriesModal() {
+            const modal = document.getElementById('categories-modal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        function renderCategoriesManagerLists() {
+            const tgList = document.getElementById('task-groups-manager-list');
+            tgList.innerHTML = state.taskGroups.map((g, idx) => `
+                <div class="flex items-center justify-between gap-2 bg-slate-50 dark:bg-slate-800/80 px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700">
+                    <input type="text" value="${escapeHtml(g)}" onchange="renameTaskGroup(${idx}, this.value)"
+                        class="bg-transparent text-xs font-semibold text-slate-800 dark:text-slate-100 flex-1 focus:outline-none focus:underline" title="Haz clic para editar el nombre">
+                    <button onclick="removeTaskGroup(${idx})" class="text-slate-400 hover:text-rose-400 text-xs px-1" title="Eliminar grupo">✕</button>
+                </div>
+            `).join('');
+
+            const hcList = document.getElementById('habit-cats-manager-list');
+            hcList.innerHTML = state.habitCategories.map((c, idx) => `
+                <div class="flex items-center justify-between gap-2 bg-slate-50 dark:bg-slate-800/80 px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700">
+                    <input type="text" value="${escapeHtml(c)}" onchange="renameHabitCategory(${idx}, this.value)"
+                        class="bg-transparent text-xs font-semibold text-slate-800 dark:text-slate-100 flex-1 focus:outline-none focus:underline" title="Haz clic para editar el nombre">
+                    <button onclick="removeHabitCategory(${idx})" class="text-slate-400 hover:text-rose-400 text-xs px-1" title="Eliminar categoría">✕</button>
+                </div>
+            `).join('');
+        }
+
+        function addTaskGroup(e) {
+            e.preventDefault();
+            const input = document.getElementById('new-task-group-input');
+            const val = input.value.trim();
+            if (!val || state.taskGroups.includes(val)) return;
+            state.taskGroups.push(val);
+            input.value = '';
+            saveState();
+            renderCategoriesManagerLists();
+            renderAll();
+            showToast(`Grupo "${val}" agregado`, 'check');
+        }
+
+        function renameTaskGroup(idx, newName) {
+            const clean = newName.trim();
+            if (!clean) return;
+            const oldName = state.taskGroups[idx];
+            state.taskGroups[idx] = clean;
+            state.pendingTasks.forEach(t => { if (t.tag === oldName) t.tag = clean; });
+            if (state.taskFilter === oldName) state.taskFilter = clean;
+            saveState();
+            renderAll();
+            showToast(`Grupo renombrado a "${clean}"`, 'check');
+        }
+
+        function removeTaskGroup(idx) {
+            if (state.taskGroups.length <= 1) {
+                showToast('Debe existir al menos 1 grupo de tareas', 'alert-circle');
+                return;
+            }
+            const removed = state.taskGroups.splice(idx, 1)[0];
+            const fallback = state.taskGroups[0];
+            state.pendingTasks.forEach(t => { if (t.tag === removed) t.tag = fallback; });
+            saveState();
+            renderCategoriesManagerLists();
+            renderAll();
+        }
+
+        function addHabitCategory(e) {
+            e.preventDefault();
+            const input = document.getElementById('new-habit-cat-input');
+            const val = input.value.trim();
+            if (!val || state.habitCategories.includes(val)) return;
+            state.habitCategories.push(val);
+            input.value = '';
+            saveState();
+            renderCategoriesManagerLists();
+            renderAll();
+            showToast(`Categoría "${val}" agregada`, 'check');
+        }
+
+        function renameHabitCategory(idx, newName) {
+            const clean = newName.trim();
+            if (!clean) return;
+            const oldName = state.habitCategories[idx];
+            state.habitCategories[idx] = clean;
+            state.habits.forEach(h => { if (h.category === oldName) h.category = clean; });
+            saveState();
+            renderAll();
+            showToast(`Categoría renombrada a "${clean}"`, 'check');
+        }
+
+        function removeHabitCategory(idx) {
+            if (state.habitCategories.length <= 1) return;
+            const removed = state.habitCategories.splice(idx, 1)[0];
+            const fallback = state.habitCategories[0];
+            state.habits.forEach(h => { if (h.category === removed) h.category = fallback; });
+            saveState();
+            renderCategoriesManagerLists();
+            renderAll();
+        }
+
+        /* ==========================================================================
+           NAVEGACIÓN Y ACCIONES DE HÁBITOS
+           ========================================================================== */
+        function navigateWeek(dir) {
+            state.currentWeekMonday = addDaysToIso(state.currentWeekMonday, dir * 7);
+            ensureWeekInitialized(state.currentWeekMonday);
+            saveState();
+            renderAll();
+        }
+
+        function goToCurrentWeek() {
+            state.currentWeekMonday = BASE_MONDAY_ISO;
+            ensureWeekInitialized(BASE_MONDAY_ISO);
+            saveState();
+            renderAll();
+        }
+
+        function jumpToWeek(wIso) {
+            state.currentWeekMonday = wIso;
+            ensureWeekInitialized(wIso);
+            saveState();
+            renderAll();
+        }
+
+        function changeReferenceDay(dayIdx) {
+            state.referenceDayIndex = Number(dayIdx);
+            document.getElementById('active-day-select').value = String(state.referenceDayIndex);
+            saveState();
+            renderAll();
+        }
+
+        function setCategoryFilter(cat) {
+            state.categoryFilter = cat;
+            renderMatrixBody();
+            lucide.createIcons();
+        }
+
+        function completeAllToday() {
+            const weekObj = getCurrentWeekObject();
+            state.habits.forEach(h => {
+                weekObj.records[h.id][state.referenceDayIndex] = 1;
+            });
+            saveState();
+            renderAll();
+            showToast(`¡Todos los hábitos del ${DAYS_OF_WEEK[state.referenceDayIndex].full} completados!`, 'award');
+        }
+
+        function renderModalPickers() {
+            document.getElementById('emoji-selector').innerHTML = EMOJI_OPTIONS.map(em => `
+                <button type="button" onclick="selectEmoji('${em}')"
+                    class="w-9 h-9 rounded-xl text-base flex items-center justify-center border ${
+                        state.selectedEmoji === em ? 'bg-teal-500/20 border-teal-500 scale-105' : 'bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700'
+                    }">${em}</button>
+            `).join('');
+
+            document.getElementById('color-selector').innerHTML = Object.keys(COLOR_PALETTE).map(k => {
+                const c = COLOR_PALETTE[k];
+                return `
+                    <button type="button" onclick="selectColor('${k}')"
+                        class="flex items-center gap-1.5 px-3 py-1 rounded-xl border text-xs font-semibold ${
+                            state.selectedColor === k ? 'border-teal-500 bg-teal-500/10 text-teal-300' : 'border-slate-700 text-slate-400'
+                        }">
+                        <span class="w-2.5 h-2.5 rounded-full ${c.dot}"></span><span>${c.name}</span>
+                    </button>
+                `;
+            }).join('');
+
+            selectTargetDays(state.selectedTargetDays);
+        }
+
+        function selectEmoji(em) { state.selectedEmoji = em; renderModalPickers(); }
+        function selectColor(col) { state.selectedColor = col; renderModalPickers(); }
+
+        function selectTargetDays(d) {
+            const num = Number(d);
+            state.selectedTargetDays = num;
+            document.getElementById('habit-goal-input').value = String(num);
+            document.getElementById('goal-mode-helper').textContent = num === 1 ? '🎯 Actividad puntual (1 día/sem)' : `${num} días/semana`;
+            document.querySelectorAll('#freq-buttons-grid .freq-btn').forEach(btn => {
+                const bDays = Number(btn.getAttribute('data-days'));
+                btn.className = bDays === num
+                    ? 'freq-btn py-2 rounded-xl border border-teal-500 bg-teal-500/20 text-teal-300 text-xs font-bold'
+                    : 'freq-btn py-2 rounded-xl border border-slate-700 bg-slate-800 text-slate-400 text-xs font-semibold';
+            });
+        }
+
+        function openHabitModal(habitId = null) {
+            renderCategoryDropdowns();
+            const modal = document.getElementById('habit-modal');
+            if (habitId) {
+                const h = state.habits.find(x => x.id === habitId);
+                if (!h) return;
+                document.getElementById('modal-title').textContent = 'Editar Hábito';
+                document.getElementById('habit-id-input').value = h.id;
+                document.getElementById('habit-name-input').value = h.name;
+                document.getElementById('habit-category-input').value = h.category;
+                document.getElementById('habit-pref-day-input').value = String(h.preferredDay ?? -1);
+                state.selectedEmoji = h.emoji;
+                state.selectedColor = h.color;
+                state.selectedTargetDays = h.targetDays || 4;
+            } else {
+                document.getElementById('modal-title').textContent = 'Nuevo Hábito';
+                document.getElementById('habit-id-input').value = '';
+                document.getElementById('habit-name-input').value = '';
+                document.getElementById('habit-pref-day-input').value = '-1';
+                state.selectedEmoji = '🎓';
+                state.selectedColor = 'violet';
+                state.selectedTargetDays = 4;
+            }
+            renderModalPickers();
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function closeHabitModal() {
+            const modal = document.getElementById('habit-modal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        function saveHabitForm(e) {
+            e.preventDefault();
+            const id = document.getElementById('habit-id-input').value;
+            const name = document.getElementById('habit-name-input').value.trim();
+            const category = document.getElementById('habit-category-input').value;
+            const targetDays = Number(document.getElementById('habit-goal-input').value) || 4;
+            const preferredDay = Number(document.getElementById('habit-pref-day-input').value);
+            if (!name) return;
+
+            if (id) {
+                const h = state.habits.find(x => x.id === id);
+                if (h) {
+                    h.name = name; h.category = category; h.targetDays = targetDays;
+                    h.preferredDay = preferredDay; h.emoji = state.selectedEmoji; h.color = state.selectedColor;
+                }
+            } else {
+                const newId = 'hab-' + Date.now();
+                state.habits.push({
+                    id: newId, name, category, emoji: state.selectedEmoji,
+                    color: state.selectedColor, targetDays, preferredDay
+                });
+                Object.keys(state.weeksData).forEach(wIso => {
+                    state.weeksData[wIso].records[newId] = [0, 0, 0, 0, 0, 0, 0];
+                });
+            }
+            saveState();
+            closeHabitModal();
+            renderAll();
+            showToast('Hábito guardado correctamente', 'check');
+        }
+
+        function deleteHabitDirectly(id) {
+            state.habits = state.habits.filter(h => h.id !== id);
+            saveState();
+            renderAll();
+            showToast('Hábito eliminado', 'trash-2');
+        }
+
+        /* ==========================================================================
+           DESCARGA DE ARCHIVOS PARA GITHUB (INDEX.HTML, README.MD, BACKUP.JSON)
+           ========================================================================== */
+        function openBackupModal() {
+            const m = document.getElementById('backup-modal');
+            m.classList.remove('hidden');
+            m.classList.add('flex');
+            lucide.createIcons();
+        }
+        function closeBackupModal() {
+            const m = document.getElementById('backup-modal');
+            m.classList.add('hidden');
+            m.classList.remove('flex');
+        }
+
+        function triggerFileDownload(content, filename, mimeType) {
+            const blob = new Blob([content], { type: mimeType });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        function downloadIndexHtmlFile() {
+            const htmlContent = INITIAL_SOURCE_HTML || ('<!DOCTYPE html>\n' + document.documentElement.outerHTML);
+            triggerFileDownload(htmlContent, 'index.html', 'text/html;charset=utf-8');
+            showToast('📄 index.html descargado (Listo para subir a GitHub)', 'file-code');
+        }
+
+        function downloadReadmeFile() {
+            const readmeContent = `# ⚡ HabitPulse — Planilla Inteligente de Hábitos, Estudio y Pendientes
+
+Aplicación web interactiva de productividad personal en un solo archivo (\`index.html\`), diseñada para seguimiento semanal de hábitos, estudio de Diplomado, búsqueda de trabajo y gestión de tareas no rutinarias.
+
+## ✨ Características Principales
+- **🗓️ Matriz Semanal Multi-Estado**: Marca hábitos al 100% (\`✓\`) o en versión Mínimo Viable (\`⚡\` 50%) para días de baja energía.
+- **🛡️ Escudos de Racha Inteligentes**: Soporte por columna para **🍕 Cheat Day**, **✈️ Día de Viaje** y **🤒 Día de Salud / Imprevisto**.
+- **⏱️ Temporizador Pomodoro Integrado**: Sesiones de 25m / 45m que marcan automáticamente tu avance del Diplomado.
+- **📌 Gestor de Tareas No Rutinarias**: Grupos 100% editables (\`✈️ Viajes\`, \`🩺 Salud\`, \`💼 Carrera\`), sub-notas y **Top 3 Foco de Hoy**.
+- **🎨 3 Temas Visuales**: Modo Oscuro Pro, Modo Claro y **Tema Códice Mate** con fondo animado en \`<canvas>\`.
+- **💾 Privacidad Total**: Todos tus datos se guardan localmente en tu navegador (\`localStorage\`) con exportación e importación en formato \`.json\`.
+
+## 🚀 Cómo usar
+1. Abre el enlace de **GitHub Pages** de este repositorio o haz doble clic sobre \`index.html\` en tu computador.
+2. Usa el botón **Kit GitHub / Datos** arriba a la derecha para descargar o restaurar copias de seguridad (\`.json\`).
+`;
+            triggerFileDownload(readmeContent, 'README.md', 'text/markdown;charset=utf-8');
+            showToast('📘 README.md descargado para tu repositorio', 'book-open');
+        }
+
+        function exportDataJson() {
+            const dataStr = JSON.stringify(state, null, 2);
+            triggerFileDownload(dataStr, `habitpulse-backup-${state.currentWeekMonday}.json`, 'application/json;charset=utf-8');
+            showToast('💾 Respaldo .json descargado en tu computador', 'database');
+        }
+
+        function downloadCompleteGitHubKit() {
+            downloadIndexHtmlFile();
+            setTimeout(() => { downloadReadmeFile(); }, 350);
+            setTimeout(() => { exportDataJson(); }, 700);
+            showToast('🚀 ¡Descargando los 3 archivos (index.html, README.md y .json)!', 'package-check');
+        }
+
+        function importDataJson(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const imported = JSON.parse(e.target.result);
+                    if (imported.habits && imported.weeksData) {
+                        state = { ...state, ...imported };
+                        saveState();
+                        closeBackupModal();
+                        renderAll();
+                        showToast('✅ Historial y tareas restaurados con éxito', 'check-circle-2');
+                    }
+                } catch (err) {
+                    showToast('Archivo JSON inválido', 'alert-triangle');
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        function resetToDefaultDemo() {
+            localStorage.removeItem(STORAGE_KEY);
+            loadState();
+            closeBackupModal();
+            renderAll();
+            showToast('↺ Datos de demostración restaurados', 'rotate-ccw');
+        }
+
+        function showToast(message, iconName = 'check-circle-2') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = 'pointer-events-auto flex items-center gap-2.5 px-4 py-3 rounded-xl bg-slate-900/95 dark:bg-slate-800 text-slate-100 text-xs font-semibold shadow-lg border border-slate-700 transition-all duration-300';
+            toast.innerHTML = `<i data-lucide="${iconName}" class="w-4 h-4 text-teal-400 shrink-0"></i><span>${escapeHtml(message)}</span>`;
+            container.appendChild(toast);
+            lucide.createIcons();
+            setTimeout(() => toast.remove(), 2600);
+        }
+
+        function escapeHtml(str) {
+            return String(str || '')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            // Guardamos una copia limpia del HTML original antes de que el DOM se llene dinámicamente
+            INITIAL_SOURCE_HTML = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
+            loadTheme();
+            loadState();
+            updatePomodoroDisplay();
+            initCodexAnimatedBackground();
+            renderAll();
+        });
+    </script>
+
+
+      <script>
+        (function() {
+          // The root element's background fills the whole page. As in CSS,
+          // the body's background is used when the root element has none.
+          function getPageBackgroundColor() {
+            var docStyle = window.getComputedStyle(document.documentElement);
+            var color = docStyle.backgroundColor;
+            if ((color === 'rgba(0, 0, 0, 0)' || color === 'transparent') &&
+                docStyle.backgroundImage === 'none' && document.body) {
+              color = window.getComputedStyle(document.body).backgroundColor;
+            }
+            return color || '';
+          }
+
+          var lastReportedColor = '';
+          function reportBackgroundColor() {
+            try {
+              var color = getPageBackgroundColor();
+              if (color === lastReportedColor) return;
+              lastReportedColor = color;
+              window.parent.postMessage({
+                type: 'ATARI_CODE_EMBED_BACKGROUND_COLOR',
+                backgroundColor: color
+              }, '*');
+            } catch (e) {}
+          }
+
+          // The page background usually changes through an attribute on html
+          // or body (for example a theme class), a style sheet in head, or the
+          // system color scheme.
+          if (typeof MutationObserver !== 'undefined') {
+            var observer = new MutationObserver(reportBackgroundColor);
+            observer.observe(document.documentElement, {attributes: true});
+            if (document.body) {
+              observer.observe(document.body, {attributes: true});
+            }
+            if (document.head) {
+              observer.observe(document.head, {
+                attributes: true,
+                childList: true,
+                subtree: true,
+                characterData: true
+              });
+            }
+          }
+          var colorSchemeQuery =
+              window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)');
+          if (colorSchemeQuery && colorSchemeQuery.addEventListener) {
+            colorSchemeQuery.addEventListener('change', reportBackgroundColor);
+          }
+          window.addEventListener('load', reportBackgroundColor);
+          window.addEventListener('transitionend', reportBackgroundColor);
+          window.addEventListener('animationend', reportBackgroundColor);
+          reportBackgroundColor();
+        })();
+      </script>
+    </body></html>

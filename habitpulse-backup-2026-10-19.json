@@ -1,0 +1,297 @@
+{
+  "habitCategories": [
+    "Mente & Estudio",
+    "Carrera & Trabajo",
+    "Fuerza & Fitness",
+    "Nutrición",
+    "Cardio & Salud",
+    "Recreación & Deporte"
+  ],
+  "taskGroups": [
+    "✈️ Viajes",
+    "🩺 Salud & Doctor",
+    "💼 Carrera & CV",
+    "🎓 Diplomado",
+    "🏠 Personal"
+  ],
+  "habits": [
+    {
+      "id": "hab-diplomado",
+      "name": "Estudiar para el Diplomado (Bloque de enfoque)",
+      "category": "Mente & Estudio",
+      "emoji": "🎓",
+      "color": "violet",
+      "targetDays": 4,
+      "preferredDay": -1
+    },
+    {
+      "id": "hab-trabajo",
+      "name": "Buscar trabajo / Postulaciones y LinkedIn",
+      "category": "Carrera & Trabajo",
+      "emoji": "💼",
+      "color": "emerald",
+      "targetDays": 1,
+      "preferredDay": 2
+    },
+    {
+      "id": "hab-1",
+      "name": "Entrenamiento de fuerza / Calistenia",
+      "category": "Fuerza & Fitness",
+      "emoji": "🏋️",
+      "color": "emerald",
+      "targetDays": 4,
+      "preferredDay": -1
+    },
+    {
+      "id": "hab-2",
+      "name": "Suplementación de creatina (5g)",
+      "category": "Nutrición",
+      "emoji": "⚡",
+      "color": "amber",
+      "targetDays": 7,
+      "preferredDay": -1
+    },
+    {
+      "id": "hab-3",
+      "name": "Alimentación limpia (Flexible con Cheat Day)",
+      "category": "Nutrición",
+      "emoji": "🥗",
+      "color": "rose",
+      "targetDays": 6,
+      "preferredDay": -1
+    },
+    {
+      "id": "hab-4",
+      "name": "Running / HIIT 30 min",
+      "category": "Cardio & Salud",
+      "emoji": "🏃",
+      "color": "cyan",
+      "targetDays": 3,
+      "preferredDay": -1
+    },
+    {
+      "id": "hab-5",
+      "name": "Partido de fútbol / Deporte semanal",
+      "category": "Recreación & Deporte",
+      "emoji": "⚽",
+      "color": "violet",
+      "targetDays": 1,
+      "preferredDay": 5
+    }
+  ],
+  "weeksData": {
+    "2026-10-12": {
+      "records": {
+        "hab-diplomado": [
+          1,
+          1,
+          0.5,
+          0,
+          1,
+          0,
+          0
+        ],
+        "hab-trabajo": [
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0
+        ],
+        "hab-1": [
+          1,
+          1,
+          0,
+          1,
+          1,
+          0,
+          0
+        ],
+        "hab-2": [
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        "hab-3": [
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          0
+        ],
+        "hab-4": [
+          1,
+          0,
+          1,
+          0,
+          1,
+          0,
+          0
+        ],
+        "hab-5": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0
+        ]
+      },
+      "cheatDays": [
+        6
+      ],
+      "travelDays": [],
+      "sickDays": [],
+      "jobApplications": 3,
+      "reflectionWin": "Cumplí todas las metas del diplomado y envié 3 postulaciones.",
+      "reflectionFocus": "Mantener el ritmo de entrenamiento y cotizar viaje a Australia."
+    },
+    "2026-10-19": {
+      "records": {
+        "hab-diplomado": [
+          1,
+          1,
+          0,
+          0.5,
+          1,
+          0,
+          0
+        ],
+        "hab-trabajo": [
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0
+        ],
+        "hab-1": [
+          1,
+          1,
+          0,
+          1,
+          0,
+          0,
+          0
+        ],
+        "hab-2": [
+          1,
+          1,
+          1,
+          1,
+          1,
+          0,
+          1
+        ],
+        "hab-3": [
+          1,
+          1,
+          1,
+          1,
+          0,
+          0,
+          1
+        ],
+        "hab-4": [
+          0,
+          1,
+          1,
+          0,
+          0,
+          0,
+          0
+        ],
+        "hab-5": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0
+        ]
+      },
+      "cheatDays": [
+        5
+      ],
+      "travelDays": [
+        4
+      ],
+      "sickDays": [],
+      "jobApplications": 2,
+      "reflectionWin": "Logré avanzar en el diplomado incluso el jueves con poca energía (⚡).",
+      "reflectionFocus": "Dejar pedida la hora al doctor y revisar vuelos."
+    }
+  },
+  "pendingTasks": [
+    {
+      "id": "task-1",
+      "title": "Pedir hora al doctor (chequeo médico general)",
+      "tag": "🩺 Salud & Doctor",
+      "priority": "alta",
+      "dueDate": "2026-10-23",
+      "notes": "Llamar a la clínica o agendar por portal web en la mañana.",
+      "pinned": true,
+      "done": false
+    },
+    {
+      "id": "task-2",
+      "title": "Buscar información sobre viaje a Australia",
+      "tag": "✈️ Viajes",
+      "priority": "media",
+      "dueDate": "2026-10-30",
+      "notes": "Revisar requisitos de visa, temporada de vuelos y ruta Santiago - Sydney.",
+      "pinned": true,
+      "done": false
+    },
+    {
+      "id": "task-3",
+      "title": "Buscar información sobre paquetes de viajes a Costa Rica",
+      "tag": "✈️ Viajes",
+      "priority": "media",
+      "dueDate": "",
+      "notes": "Comparar paquetes con vuelos + hotel en Arenal y Manuel Antonio.",
+      "pinned": false,
+      "done": false
+    },
+    {
+      "id": "task-4",
+      "title": "Actualizar CV y portafolio base para las postulaciones semanales",
+      "tag": "💼 Carrera & CV",
+      "priority": "alta",
+      "dueDate": "2026-10-22",
+      "notes": "Destacar proyectos recientes y certificaciones del Diplomado.",
+      "pinned": true,
+      "done": false
+    },
+    {
+      "id": "task-5",
+      "title": "Descargar lecturas y calendario de evaluaciones del Diplomado",
+      "tag": "🎓 Diplomado",
+      "priority": "media",
+      "dueDate": "",
+      "notes": "Guardado en carpeta del computador.",
+      "pinned": false,
+      "done": true
+    }
+  ],
+  "currentWeekMonday": "2026-10-19",
+  "referenceDayIndex": 1,
+  "categoryFilter": "TODOS",
+  "taskFilter": "TODAS",
+  "chartMode": "bars",
+  "selectedEmoji": "🎓",
+  "selectedColor": "violet",
+  "selectedTargetDays": 4,
+  "themeMode": "codex"
+}
